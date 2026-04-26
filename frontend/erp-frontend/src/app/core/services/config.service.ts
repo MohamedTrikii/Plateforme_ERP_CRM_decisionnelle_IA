@@ -1,104 +1,77 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, tap } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { ConfigMap, CONFIG_KEYS } from '../models/system-config.model';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AuthService } from '../auth/auth.service';
+import { ThemeService } from './theme.service';
 
 /**
- * ConfigService – loads and caches dynamic system configuration.
+ * ConfigService – loads and caches the tenant's public SystemConfig.
  *
- * This is the core of the "template engine" pattern.
- * On startup, the app fetches the public config map from the backend
- * and applies it via the ThemeService.
+ * The config map drives:
+ * - Dynamic branding (colors, logo, company name)
+ * - Enabled modules (sidebar items)
+ * - Any UI labels or texts
  *
- * The config map is cached in memory and emitted as a reactive stream
- * so all components can react to config changes in real-time.
+ * Cached in memory; refresh by calling loadConfig() again.
  */
 @Injectable({ providedIn: 'root' })
 export class ConfigService {
 
-  private readonly configSubject = new BehaviorSubject<ConfigMap>({});
+  private readonly BASE_URL = `${environment.coreApiUrl}/config`;
 
-  /** Reactive config map – subscribe to get live updates */
+  private configSubject = new BehaviorSubject<Record<string, string>>({});
   config$ = this.configSubject.asObservable();
 
   constructor(
-    private readonly http: HttpClient,
-    private readonly authService: AuthService
+    private http: HttpClient,
+    private themeService: ThemeService,
   ) {}
 
-  /**
-   * Load public config at app startup (called in APP_INITIALIZER).
-   * No authentication required – the login page needs branding too.
-   */
-  loadPublicConfig(): Observable<ConfigMap> {
-    const tenantId = this.authService.tenantId || 'default';
-    return this.http.get<ConfigMap>(
-      `${environment.apiUrl}/config/public?tenantId=${tenantId}`
-    ).pipe(
-      tap(config => this.configSubject.next(config)),
-      catchError(err => {
-        console.warn('Could not load system config, using defaults', err);
-        return of(this.getDefaultConfig());
-      })
-    );
+  /** Load public config for a tenant and apply the theme. */
+  loadPublicConfig(tenantId: string): Observable<Record<string, string>> {
+    return this.http
+      .get<Record<string, string>>(`${this.BASE_URL}/public`, { params: { tenantId } })
+      .pipe(
+        tap(config => {
+          this.configSubject.next(config);
+          this.themeService.applyConfig(config);
+        })
+      );
   }
 
-  /** Load full config (admin only) */
-  loadFullConfig(): Observable<ConfigMap> {
-    const tenantId = this.authService.tenantId;
-    return this.http.get<ConfigMap>(
-      `${environment.apiUrl}/config/map?tenantId=${tenantId}`
-    ).pipe(
-      tap(config => this.configSubject.next(config))
-    );
+  /** Load full config (admin only). */
+  loadFullConfig(tenantId: string): Observable<Record<string, string>> {
+    return this.http
+      .get<Record<string, string>>(`${this.BASE_URL}`, { params: { tenantId } })
+      .pipe(tap(config => this.configSubject.next(config)));
   }
 
-  /** Get a single config value synchronously (falls back to default) */
-  get(key: string, defaultValue = ''): string {
-    return this.configSubject.value[key] ?? defaultValue;
+  /** Get a single config value (sync, from cache). */
+  get(key: string, fallback = ''): string {
+    return this.configSubject.value[key] ?? fallback;
   }
 
-  /** Update the in-memory config and optionally persist to backend */
-  updateLocal(updates: ConfigMap): void {
-    this.configSubject.next({
-      ...this.configSubject.value,
-      ...updates,
-    });
+  /** Get the company name for this tenant */
+  getCompanyName(): string {
+    return this.get('company.name', 'ERP Platform');
   }
 
-  /** Persist a bulk config update to backend */
-  saveBulk(values: Array<{ configKey: string; configValue: string }>): Observable<void> {
-    const tenantId = this.authService.tenantId;
-    return this.http.put<void>(
-      `${environment.apiUrl}/config/bulk?tenantId=${tenantId}`,
-      values
-    ).pipe(
-      tap(() => {
-        const map: ConfigMap = {};
-        values.forEach(v => { map[v.configKey] = v.configValue; });
-        this.updateLocal(map);
-      })
-    );
+  /** Get the company logo URL */
+  getLogoUrl(): string {
+    return this.get('company.logoUrl', 'assets/images/default-logo.svg');
   }
 
-  /** Return current config snapshot (synchronous) */
-  getAll(): ConfigMap {
+  /** Get enabled module slugs (JSON array stored as string) */
+  getEnabledModules(): string[] {
+    try {
+      const raw = this.get('modules.enabled', '["dashboard","customers","products","orders","stock"]');
+      return JSON.parse(raw) as string[];
+    } catch {
+      return ['dashboard', 'customers', 'products', 'orders', 'stock'];
+    }
+  }
+
+  getCurrentConfig(): Record<string, string> {
     return this.configSubject.value;
-  }
-
-  // ── Defaults ──────────────────────────────────────────────────────────────
-
-  private getDefaultConfig(): ConfigMap {
-    return {
-      [CONFIG_KEYS.COMPANY_NAME]:     'ERP Platform',
-      [CONFIG_KEYS.PRIMARY_COLOR]:    '#1565C0',
-      [CONFIG_KEYS.SECONDARY_COLOR]:  '#0097A7',
-      [CONFIG_KEYS.ACCENT_COLOR]:     '#FF6F00',
-      [CONFIG_KEYS.FONT_FAMILY]:      'Roboto, sans-serif',
-      [CONFIG_KEYS.SIDEBAR_MODULES]:  '["dashboard","customers","products","orders","stock"]',
-    };
   }
 }

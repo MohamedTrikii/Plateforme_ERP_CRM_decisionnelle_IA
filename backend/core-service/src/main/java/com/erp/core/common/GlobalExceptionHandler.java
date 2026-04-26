@@ -33,6 +33,7 @@ public class GlobalExceptionHandler {
 
     /** Validation failures (e.g. @NotBlank, @Email) */
     @ExceptionHandler(MethodArgumentNotValidException.class)
+    @SuppressWarnings("null")
     public ResponseEntity<ProblemDetail> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap(
@@ -51,6 +52,7 @@ public class GlobalExceptionHandler {
 
     /** Business rule violations (e.g. duplicate email, not found) */
     @ExceptionHandler(IllegalArgumentException.class)
+    @SuppressWarnings("null")
     public ResponseEntity<ProblemDetail> handleIllegalArgument(IllegalArgumentException ex) {
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
         pd.setTitle("Business Rule Violation");
@@ -62,6 +64,7 @@ public class GlobalExceptionHandler {
 
     /** Not-found errors surfaced as RuntimeException("... not found") */
     @ExceptionHandler(RuntimeException.class)
+    @SuppressWarnings("null")
     public ResponseEntity<ProblemDetail> handleRuntime(RuntimeException ex) {
         String msg = ex.getMessage() != null ? ex.getMessage() : "Unexpected error";
         boolean isNotFound = msg.toLowerCase().contains("not found");
@@ -79,6 +82,7 @@ public class GlobalExceptionHandler {
 
     /** Access denied (missing role) */
     @ExceptionHandler(AccessDeniedException.class)
+    @SuppressWarnings("null")
     public ResponseEntity<ProblemDetail> handleAccessDenied(AccessDeniedException ex) {
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
         pd.setTitle("Access Denied");

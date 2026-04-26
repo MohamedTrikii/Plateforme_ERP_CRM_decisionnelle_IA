@@ -1,72 +1,88 @@
-import { NgModule, APP_INITIALIZER } from '@angular/core';
+import { NgModule } from '@angular/core';
+import { AppComponent } from './app.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { ReactiveFormsModule } from '@angular/forms';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { RouterModule, Routes } from '@angular/router';
 
-// Angular Material
-import { MatToolbarModule }  from '@angular/material/toolbar';
-import { MatSidenavModule }  from '@angular/material/sidenav';
-import { MatListModule }     from '@angular/material/list';
-import { MatIconModule }     from '@angular/material/icon';
-import { MatButtonModule }   from '@angular/material/button';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CoreModule }   from './core/core.module';
+import { SharedModule } from './shared/shared.module';
+import { LayoutModule } from './layout/layout.module';
 
-import { AppRoutingModule }  from './app-routing.module';
-import { AppComponent }      from './app.component';
-import { JwtInterceptor }    from './core/auth/jwt.interceptor';
-import { ConfigService }     from './core/services/config.service';
-import { ThemeService }      from './shared/theme/theme.service';
+import { ShellComponent } from './layout/shell/shell.component';
 
-// Shared components
-import { NavbarComponent }   from './shared/components/navbar/navbar.component';
-import { SidebarComponent }  from './shared/components/sidebar/sidebar.component';
+import { authGuard }  from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
+
+import { jwtInterceptor }   from './core/interceptors/jwt.interceptor';
+import { errorInterceptor } from './core/interceptors/error.interceptor';
 
 /**
- * APP_INITIALIZER – loads public config before the app renders.
- * This ensures theme colors and branding are available immediately,
- * even on the login page.
+ * Application routes – lazy-loads each feature module.
+ * Protected routes use authGuard; admin-only routes also use adminGuard.
  */
-function initApp(configService: ConfigService) {
-  return () => configService.loadPublicConfig();
-}
+const routes: Routes = [
+  // Auth routes (public)
+  {
+    path: 'auth',
+    loadChildren: () =>
+      import('./features/auth/auth.module').then(m => m.AuthModule),
+  },
+
+  // Protected shell – all authenticated pages live here
+  {
+    path: '',
+    component: ShellComponent,
+    canActivate: [authGuard],
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'dashboard',
+        loadChildren: () =>
+          import('./features/dashboard/dashboard.module').then(m => m.DashboardModule),
+      },
+      {
+        path: 'products',
+        loadChildren: () =>
+          import('./features/products/products.module').then(m => m.ProductsModule),
+      },
+      {
+        path: 'orders',
+        loadChildren: () =>
+          import('./features/orders/orders.module').then(m => m.OrdersModule),
+      },
+      {
+        path: 'customers',
+        loadChildren: () =>
+          import('./features/customers/customers.module').then(m => m.CustomersModule),
+      },
+      {
+        path: 'stock',
+        canActivate: [adminGuard],
+        loadChildren: () =>
+          import('./features/stock/stock.module').then(m => m.StockModule),
+      },
+    ],
+  },
+
+  // Fallback
+  { path: '**', redirectTo: 'dashboard' },
+];
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    NavbarComponent,
-    SidebarComponent,
-  ],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
-    HttpClientModule,
-    ReactiveFormsModule,
-    AppRoutingModule,
-    // Angular Material
-    MatToolbarModule,
-    MatSidenavModule,
-    MatListModule,
-    MatIconModule,
-    MatButtonModule,
-    MatSnackBarModule,
-    MatProgressSpinnerModule,
+    CoreModule,
+    SharedModule,
+    LayoutModule,
+    RouterModule.forRoot(routes, { scrollPositionRestoration: 'enabled' }),
   ],
   providers: [
-    // JWT interceptor – auto-attaches Bearer token
-    {
-      provide:  HTTP_INTERCEPTORS,
-      useClass: JwtInterceptor,
-      multi:    true,
-    },
-    // Load system config before first render
-    {
-      provide:    APP_INITIALIZER,
-      useFactory: initApp,
-      deps:       [ConfigService],
-      multi:      true,
-    },
+    provideHttpClient(
+      withInterceptors([jwtInterceptor, errorInterceptor])
+    ),
   ],
   bootstrap: [AppComponent],
 })
