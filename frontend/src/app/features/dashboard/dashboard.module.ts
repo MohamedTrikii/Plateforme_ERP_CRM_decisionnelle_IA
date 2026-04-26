@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
-import { NgChartsModule } from 'ng2-charts';
+import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { DashboardComponent } from './dashboard.component';
 
 const routes: Routes = [
@@ -10,6 +10,8 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [DashboardComponent],
-  imports: [SharedModule, NgChartsModule, RouterModule.forChild(routes)],
+  imports: [SharedModule, BaseChartDirective, RouterModule.forChild(routes)],
+  providers: [provideCharts(withDefaultRegisterables())],
 })
 export class DashboardModule {}
+

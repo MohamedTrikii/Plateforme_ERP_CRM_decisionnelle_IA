@@ -61,7 +61,7 @@ export class OrderListComponent implements OnInit {
   cols     = ['orderNumber', 'customer', 'orderDate', 'totalAmount', 'status', 'actions'];
   statuses = ['DRAFT', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 
-  constructor(private service: OrderService, private snack: MatSnackBar) {}
+  constructor(private readonly service: OrderService, private readonly snack: MatSnackBar) {}
 
   ngOnInit(): void { this.load(); }
 

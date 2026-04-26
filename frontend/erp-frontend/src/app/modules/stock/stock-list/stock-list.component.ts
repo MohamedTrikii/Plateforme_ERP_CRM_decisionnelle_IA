@@ -52,7 +52,7 @@ export class StockListComponent implements OnInit {
   loading  = false;
   cols     = ['product', 'onHand', 'reserved', 'available', 'reorderLevel', 'status'];
 
-  constructor(private service: StockService) {}
+  constructor(private readonly service: StockService) {}
   ngOnInit(): void { this.load(); }
 
   load(): void {

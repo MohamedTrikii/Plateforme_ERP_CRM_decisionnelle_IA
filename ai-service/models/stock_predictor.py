@@ -32,11 +32,11 @@ class StockPredictor:
             raise ValueError("At least 3 data points required")
 
         # Prepare features: period number + period² for trend curves
-        X_raw = np.array([p for p, _ in sales_history]).reshape(-1, 1)
+        x_raw = np.array([p for p, _ in sales_history]).reshape(-1, 1)
         y     = np.array([q for _, q in sales_history])
 
         # Polynomial features (degree 2)
-        X = self._poly_features(X_raw)
+        X = self._poly_features(x_raw)
 
         model = LinearRegression()
         model.fit(X, y)
@@ -46,10 +46,10 @@ class StockPredictor:
         std_res   = float(np.std(residuals))
 
         # Forecast
-        last_period = int(X_raw[-1][0])
+        last_period = int(x_raw[-1][0])
         future_periods = list(range(last_period + 1, last_period + periods_ahead + 1))
-        X_future = self._poly_features(np.array(future_periods).reshape(-1, 1))
-        predictions_raw = model.predict(X_future)
+        x_future = self._poly_features(np.array(future_periods).reshape(-1, 1))
+        predictions_raw = model.predict(x_future)
 
         predictions = [
             {

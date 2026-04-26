@@ -31,7 +31,7 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/api/v1/dashboard")
 @RequiredArgsConstructor
-public class DashboardController {
+public class DashboardKpiController {
 
     private final CustomerRepository customerRepository;
     private final ProductRepository  productRepository;

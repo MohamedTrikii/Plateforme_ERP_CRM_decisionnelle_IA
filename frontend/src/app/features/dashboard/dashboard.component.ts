@@ -17,7 +17,7 @@ import { NotificationService } from '../../core/services/notification.service';
         <app-stat-card label="Total Orders" [value]="stats.totalOrders"
           icon="receipt_long" color="accent"></app-stat-card>
         <app-stat-card label="Revenue (This Month)"
-          [value]="stats.revenueThisMonth | currency:'MAD':'symbol':'1.0-0'"
+          [value]="(stats.revenueThisMonth | currency:'MAD':'symbol':'1.0-0') || '0'"
           icon="payments" color="success" [trend]="revenueGrowth"></app-stat-card>
         <app-stat-card label="Low Stock Items" [value]="stats.lowStockProductCount"
           icon="warning" color="warn"></app-stat-card>

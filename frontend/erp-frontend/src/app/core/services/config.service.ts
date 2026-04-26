@@ -19,14 +19,14 @@ import { AuthService } from '../auth/auth.service';
 @Injectable({ providedIn: 'root' })
 export class ConfigService {
 
-  private configSubject = new BehaviorSubject<ConfigMap>({});
+  private readonly configSubject = new BehaviorSubject<ConfigMap>({});
 
   /** Reactive config map – subscribe to get live updates */
   config$ = this.configSubject.asObservable();
 
   constructor(
-    private http: HttpClient,
-    private authService: AuthService
+    private readonly http: HttpClient,
+    private readonly authService: AuthService
   ) {}
 
   /**

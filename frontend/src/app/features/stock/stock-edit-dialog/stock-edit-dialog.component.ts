@@ -52,7 +52,7 @@ export class StockEditDialogComponent {
   save(): void {
     if (this.form.invalid) return;
     this.saving = true;
-    this.stockService.update(this.data.item.id!, { ...this.form.value, tenantId: this.data.tenantId }).subscribe({
+    this.stockService.update(this.data.item.id!, { ...this.form.value as any, tenantId: this.data.tenantId }).subscribe({
       next: () => { this.notification.success('Stock updated'); this.dialogRef.close(true); },
       error: () => { this.saving = false; this.notification.error('Failed to update stock'); },
     });

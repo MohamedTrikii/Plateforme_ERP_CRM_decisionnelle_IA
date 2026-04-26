@@ -28,10 +28,10 @@ export class RegisterComponent implements OnInit {
   loading = false;
 
   constructor(
-    private fb:          FormBuilder,
-    private authService: AuthService,
-    private router:      Router,
-    private snackBar:    MatSnackBar
+    private readonly fb:          FormBuilder,
+    private readonly authService: AuthService,
+    private readonly router:      Router,
+    private readonly snackBar:    MatSnackBar
   ) {}
 
   ngOnInit(): void {

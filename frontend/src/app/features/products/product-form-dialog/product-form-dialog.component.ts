@@ -90,7 +90,7 @@ export class ProductFormDialogComponent implements OnInit {
   save(): void {
     if (this.form.invalid) return;
     this.saving = true;
-    const payload: Product = { ...this.form.value as Product, tenantId: this.data.tenantId };
+    const payload: Product = { ...this.form.value as any, tenantId: this.data.tenantId };
     const op = this.data.product
       ? this.productService.update(this.data.product.id!, payload)
       : this.productService.create(payload);

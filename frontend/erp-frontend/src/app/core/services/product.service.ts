@@ -8,9 +8,9 @@ import { AuthService } from '../auth/auth.service';
 @Injectable({ providedIn: 'root' })
 export class ProductService {
 
-  private base = `${environment.apiUrl}/products`;
+  private readonly base = `${environment.apiUrl}/products`;
 
-  constructor(private http: HttpClient, private auth: AuthService) {}
+  constructor(private readonly http: HttpClient, private readonly auth: AuthService) {}
 
   private get tenantId(): string { return this.auth.tenantId; }
 

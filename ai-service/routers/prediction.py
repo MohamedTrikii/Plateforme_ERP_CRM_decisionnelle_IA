@@ -48,7 +48,7 @@ class PredictionResponse(BaseModel):
     modelScore:  float   # R² on training data
 
 
-@router.post("/predict/stock", response_model=PredictionResponse)
+@router.post("/predict/stock", responses={422: {"description": "Unprocessable Entity - validation error or insufficient data"}})
 def predict_stock(request: PredictionRequest) -> PredictionResponse:
     """
     Predict future stock demand for a product.

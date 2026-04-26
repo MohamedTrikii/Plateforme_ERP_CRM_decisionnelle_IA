@@ -21,9 +21,9 @@ export class SystemConfigComponent implements OnInit {
   saving = false;
 
   constructor(
-    private fb:            FormBuilder,
-    private configService: ConfigService,
-    private snack:         MatSnackBar
+    private readonly fb:            FormBuilder,
+    private readonly configService: ConfigService,
+    private readonly snack:         MatSnackBar
   ) {}
 
   ngOnInit(): void {
