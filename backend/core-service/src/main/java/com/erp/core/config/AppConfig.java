@@ -21,6 +21,7 @@ public class AppConfig {
      * into @CreatedBy / @LastModifiedBy fields via JPA Auditing.
      */
     @Bean
+    @SuppressWarnings("null")
     public AuditorAware<String> auditorAware() {
         return () -> {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();

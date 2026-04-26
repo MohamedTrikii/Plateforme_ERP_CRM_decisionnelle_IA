@@ -22,6 +22,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
+@SuppressWarnings("null")
 public class UserManagementController {
 
     private final UserRepository userRepository;

@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8083
 
 spring:
   application:
@@ -30,11 +30,7 @@ spring:
           uri: http://localhost:8081
           predicates:
             - Path=/api/v1/auth/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 20
-                redis-rate-limiter.burstCapacity: 40
+          filters: []
 
         # ── Core Service ───────────────────────────────────────────────
         - id: core-service-customers

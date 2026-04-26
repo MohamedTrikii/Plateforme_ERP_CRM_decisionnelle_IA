@@ -1,6 +1,5 @@
-// User model
 export interface User {
-  id?: number;
+  id: number;
   username: string;
   email: string;
   fullName: string;
@@ -17,7 +16,6 @@ export interface AuthResponse {
   username: string;
   role: string;
   tenantId: string;
-  expiresIn: number;
 }
 
 export interface LoginRequest {
