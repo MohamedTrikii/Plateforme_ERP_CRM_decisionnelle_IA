@@ -1,0 +1,38 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: core-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/erp_core
+    username: ${DB_USERNAME:erp_user}
+    password: ${DB_PASSWORD:erp_pass}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+# Reuse the same JWT secret as auth-service (shared signing key)
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+
+# AI Service URL
+ai:
+  service:
+    url: ${AI_SERVICE_URL:http://localhost:8000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+
+logging:
+  level:
+    com.erp.core: DEBUG

@@ -1,0 +1,42 @@
+<mat-card style="max-width:600px; margin: 0 auto">
+  <mat-card-header>
+    <mat-card-title>{{ editId ? 'Edit' : 'New' }} Customer</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+    <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Name</mat-label>
+        <input matInput formControlName="name" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Phone</mat-label>
+        <input matInput formControlName="phone" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Company</mat-label>
+        <input matInput formControlName="company" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" style="grid-column: 1/-1">
+        <mat-label>Address</mat-label>
+        <textarea matInput formControlName="address" rows="2"></textarea>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          <mat-option *ngFor="let s of statusOptions" [value]="s">{{ s }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </form>
+  </mat-card-content>
+  <mat-card-actions align="end">
+    <button mat-button routerLink="/customers">Cancel</button>
+    <button mat-raised-button color="primary" (click)="save()" [disabled]="form.invalid || saving">
+      {{ saving ? 'Saving…' : 'Save' }}
+    </button>
+  </mat-card-actions>
+</mat-card>

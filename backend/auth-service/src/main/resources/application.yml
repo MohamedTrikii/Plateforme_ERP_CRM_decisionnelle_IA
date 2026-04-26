@@ -1,0 +1,51 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/erp_auth
+    username: ${DB_USERNAME:erp_user}
+    password: ${DB_PASSWORD:erp_pass}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  # Connection pool
+  datasource-hikari:
+    maximum-pool-size: 10
+    minimum-idle: 2
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  expiration: 86400000          # 24 hours in ms
+  refresh-expiration: 604800000 # 7 days in ms
+
+# Eureka Service Discovery (optional, enable when using Eureka)
+# eureka:
+#   client:
+#     service-url:
+#       defaultZone: http://localhost:8761/eureka
+
+# Actuator endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# Logging
+logging:
+  level:
+    com.erp.auth: DEBUG
+    org.springframework.security: INFO

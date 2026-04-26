@@ -1,0 +1,29 @@
+.navbar {
+  background: var(--primary-color) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.logo {
+  height: 36px;
+  margin: 0 8px;
+  border-radius: 4px;
+}
+
+.company-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.spacer { flex: 1; }
+
+.username-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.15);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  margin-right: 8px;
+}

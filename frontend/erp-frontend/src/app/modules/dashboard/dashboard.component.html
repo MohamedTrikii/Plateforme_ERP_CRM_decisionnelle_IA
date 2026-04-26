@@ -1,0 +1,66 @@
+<div class="dashboard-header">
+  <h1>Welcome to {{ companyName }}</h1>
+  <button mat-icon-button (click)="refresh()" title="Refresh">
+    <mat-icon>refresh</mat-icon>
+  </button>
+</div>
+
+<!-- Loading skeleton -->
+<div *ngIf="loading" class="kpi-grid">
+  <mat-card *ngFor="let i of [1,2,3,4,5,6]" class="kpi-card skeleton">
+    <mat-spinner diameter="40"></mat-spinner>
+  </mat-card>
+</div>
+
+<!-- KPI Cards -->
+<div *ngIf="!loading && kpi" class="kpi-grid">
+
+  <mat-card class="kpi-card kpi-primary">
+    <mat-card-content>
+      <mat-icon class="kpi-icon">people</mat-icon>
+      <div class="kpi-value">{{ kpi.totalCustomers | number }}</div>
+      <div class="kpi-label">Total Customers</div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="kpi-card kpi-secondary">
+    <mat-card-content>
+      <mat-icon class="kpi-icon">inventory_2</mat-icon>
+      <div class="kpi-value">{{ kpi.totalProducts | number }}</div>
+      <div class="kpi-label">Total Products</div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="kpi-card kpi-accent">
+    <mat-card-content>
+      <mat-icon class="kpi-icon">shopping_cart</mat-icon>
+      <div class="kpi-value">{{ kpi.totalOrders | number }}</div>
+      <div class="kpi-label">Total Orders</div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="kpi-card kpi-warning">
+    <mat-card-content>
+      <mat-icon class="kpi-icon">pending_actions</mat-icon>
+      <div class="kpi-value">{{ kpi.pendingOrders | number }}</div>
+      <div class="kpi-label">Pending Orders</div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="kpi-card kpi-success">
+    <mat-card-content>
+      <mat-icon class="kpi-icon">attach_money</mat-icon>
+      <div class="kpi-value">{{ kpi.monthlyRevenue | currency }}</div>
+      <div class="kpi-label">Monthly Revenue</div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="kpi-card" [class.kpi-danger]="kpi.lowStockCount > 0">
+    <mat-card-content>
+      <mat-icon class="kpi-icon">warning</mat-icon>
+      <div class="kpi-value">{{ kpi.lowStockCount }}</div>
+      <div class="kpi-label">Low Stock Items</div>
+    </mat-card-content>
+  </mat-card>
+
+</div>

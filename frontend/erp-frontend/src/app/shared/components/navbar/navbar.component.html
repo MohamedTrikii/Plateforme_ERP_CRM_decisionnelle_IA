@@ -1,0 +1,25 @@
+<mat-toolbar color="primary" class="navbar">
+
+  <!-- Hamburger menu -->
+  <button mat-icon-button (click)="menuToggle.emit()" aria-label="Toggle menu">
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <!-- Logo + Company Name -->
+  <img *ngIf="logoUrl" [src]="logoUrl" [alt]="companyName" class="logo" />
+  <span class="company-name">{{ companyName }}</span>
+
+  <span class="spacer"></span>
+
+  <!-- Username chip -->
+  <span class="username-chip">
+    <mat-icon>account_circle</mat-icon>
+    {{ username }}
+  </span>
+
+  <!-- Logout -->
+  <button mat-icon-button (click)="logout()" title="Logout">
+    <mat-icon>logout</mat-icon>
+  </button>
+
+</mat-toolbar>
