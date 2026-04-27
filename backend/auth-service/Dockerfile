@@ -1,5 +1,5 @@
 # Multi-stage build for Spring Boot services
-FROM eclipse-temurin:21-jdk-alpine AS build
+FROM eclipse-temurin:25-jdk-alpine AS build
 WORKDIR /app
 
 # Copy parent POM + module POMs first (Docker layer caching)
@@ -18,7 +18,7 @@ RUN --mount=type=cache,target=/root/.m2 \
     mvn -f auth-service/pom.xml package -DskipTests -q
 
 # ── Runtime image ─────────────────────────────────────────────────────────────
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 COPY --from=build /app/auth-service/target/*.jar app.jar
 EXPOSE 8081

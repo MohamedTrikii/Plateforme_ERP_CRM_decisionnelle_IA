@@ -16,10 +16,10 @@
     <description>Spring Cloud Gateway – single entry point for all microservices</description>
 
     <dependencies>
-        <!-- Spring Cloud Gateway (reactive, replaces Spring MVC) -->
+        <!-- Spring Cloud Gateway WebFlux (replaces spring-cloud-starter-gateway in Spring Cloud 2025.0.0) -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-gateway</artifactId>
+            <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
         </dependency>
         <!-- Actuator -->
         <dependency>
