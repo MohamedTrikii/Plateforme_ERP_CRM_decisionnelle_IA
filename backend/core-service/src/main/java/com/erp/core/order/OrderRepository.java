@@ -48,4 +48,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     long countByTenantId(String tenantId);
 
     long countByTenantIdAndStatus(String tenantId, Order.OrderStatus status);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.tenantId = :tenantId AND o.orderDate BETWEEN :start AND :end")
+    long countOrdersInRange(@Param("tenantId") String tenantId,
+                            @Param("start") LocalDate start,
+                            @Param("end") LocalDate end);
 }
