@@ -49,7 +49,7 @@ export class ShellComponent implements OnInit {
       this.isMobile = result.matches;
     });
 
-    // Load tenant config & apply theme
+    // Load tenant config & apply theme; use full config if authenticated
     const tenantId = this.authService.getTenantId();
     this.configService.loadPublicConfig(tenantId).subscribe();
   }

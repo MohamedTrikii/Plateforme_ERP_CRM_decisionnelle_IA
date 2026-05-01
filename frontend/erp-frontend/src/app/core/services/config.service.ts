@@ -74,4 +74,24 @@ export class ConfigService {
   getCurrentConfig(): Record<string, string> {
     return this.configSubject.value;
   }
+
+  /** Get all config values (alias for getCurrentConfig) */
+  getAll(): Record<string, string> {
+    return this.configSubject.value;
+  }
+
+  /** Save multiple config entries (admin only) */
+  saveBulk(updates: Array<{ configKey: string; configValue: string }>): Observable<void> {
+    return this.http.post<void>(`${this.BASE_URL}/bulk`, updates).pipe(
+      tap(() => {
+        // Update local cache
+        const currentConfig = { ...this.configSubject.value };
+        updates.forEach(({ configKey, configValue }) => {
+          currentConfig[configKey] = configValue;
+        });
+        this.configSubject.next(currentConfig);
+        this.themeService.applyConfig(currentConfig);
+      })
+    );
+  }
 }

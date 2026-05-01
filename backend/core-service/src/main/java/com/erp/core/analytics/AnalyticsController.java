@@ -5,6 +5,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.Map;
+
 /**
  * AnalyticsController – provides aggregated analytics data for charts/reports.
  *
@@ -32,25 +35,25 @@ public class AnalyticsController {
 
     /** Monthly revenue series – defaults to last 12 months. */
     @GetMapping("/revenue")
-    public ResponseEntity<?> getMonthlyRevenue(
+    public ResponseEntity<Map<String, BigDecimal>> getMonthlyRevenue(
             @RequestParam String tenantId,
             @RequestParam(defaultValue = "12") int months) {
-        int safeMonths = Math.min(Math.max(months, 1), 24);
+        int safeMonths = Math.clamp(months, 1, 24);
         return ResponseEntity.ok(analyticsService.getMonthlyRevenue(tenantId, safeMonths));
     }
 
     /** Monthly order volume series. */
     @GetMapping("/orders/volume")
-    public ResponseEntity<?> getOrderVolume(
+    public ResponseEntity<Map<String, Long>> getOrderVolume(
             @RequestParam String tenantId,
             @RequestParam(defaultValue = "12") int months) {
-        int safeMonths = Math.min(Math.max(months, 1), 24);
+        int safeMonths = Math.clamp(months, 1, 24);
         return ResponseEntity.ok(analyticsService.getMonthlyOrderVolume(tenantId, safeMonths));
     }
 
     /** Order count grouped by status. */
     @GetMapping("/orders/status")
-    public ResponseEntity<?> getOrdersByStatus(@RequestParam String tenantId) {
+    public ResponseEntity<Map<String, Long>> getOrdersByStatus(@RequestParam String tenantId) {
         return ResponseEntity.ok(analyticsService.getOrdersByStatus(tenantId));
     }
 }

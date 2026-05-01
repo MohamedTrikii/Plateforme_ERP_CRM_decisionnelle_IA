@@ -63,6 +63,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             String username = claims.getSubject();
             String role     = claims.get("role", String.class);
+            String tenantId = claims.get("tenantId", String.class);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 List<SimpleGrantedAuthority> authorities = (role != null)
@@ -72,6 +73,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(username, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(auth);
+
+                // Store tenantId as request attribute so controllers can use it
+                if (tenantId != null) {
+                    request.setAttribute("jwtTenantId", tenantId);
+                }
             }
         } catch (Exception ex) {
             log.warn("JWT validation failed in core-service: {}", ex.getMessage());

@@ -35,7 +35,7 @@ export class AuthService {
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
-      `${environment.authUrl}/login`, credentials
+      `${environment.authApiUrl}/auth/login`, credentials
     ).pipe(
       tap(response => this.storeAuthData(response))
     );
@@ -45,7 +45,7 @@ export class AuthService {
 
   register(data: RegisterRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
-      `${environment.authUrl}/register`, data
+      `${environment.authApiUrl}/auth/register`, data
     ).pipe(
       tap(response => this.storeAuthData(response))
     );

@@ -19,10 +19,13 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class SystemConfigService {
 
     private final SystemConfigRepository configRepository;
     private final AuditService           auditService;
+
+    private static final String ENTITY_NAME = "SystemConfig";
 
     /** Returns all config entries for a tenant as a flat key→value map. */
     @Transactional(readOnly = true)
@@ -72,7 +75,7 @@ public class SystemConfigService {
         SystemConfig saved = configRepository.save(config);
 
         // Audit every config change
-        auditService.log("SystemConfig",
+        auditService.log(ENTITY_NAME,
                 tenantId + ":" + incoming.getConfigKey(),
                 "CONFIG_CHANGE",
                 oldValue,
@@ -94,7 +97,7 @@ public class SystemConfigService {
             String oldValue = sc.getConfigValue();
             sc.setConfigValue(value);
             configRepository.save(sc);
-            auditService.log("SystemConfig", tenantId + ":" + key,
+            auditService.log(ENTITY_NAME, tenantId + ":" + key,
                     "CONFIG_CHANGE", oldValue, value, tenantId);
         });
     }
@@ -106,7 +109,7 @@ public class SystemConfigService {
                 throw new SecurityException("Tenant mismatch");
             }
             configRepository.delete(sc);
-            auditService.log("SystemConfig", String.valueOf(id),
+            auditService.log(ENTITY_NAME, String.valueOf(id),
                     "DELETE", sc.getConfigValue(), null, tenantId);
         });
     }
