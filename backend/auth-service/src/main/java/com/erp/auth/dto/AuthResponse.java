@@ -21,6 +21,7 @@ public class AuthResponse {
     private String tokenType = "Bearer";
 
     private String username;
+    private String email;
     private String role;
     private String tenantId;
     private long   expiresIn;      // seconds until access token expires

@@ -96,7 +96,7 @@ export class LoginComponent {
     this.authService.login({ username: username!, password: password! }).subscribe({
       next: () => {
         this.notification.success('Welcome back!');
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/app/dashboard']);
       },
       error: (err) => {
         this.loading = false;

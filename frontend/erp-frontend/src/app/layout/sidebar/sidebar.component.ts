@@ -78,14 +78,14 @@ export class SidebarComponent implements OnInit {
   tenantId    = '';
 
   private readonly ALL_NAV_ITEMS: NavItem[] = [
-    { label: 'Dashboard',  icon: 'dashboard',        route: '/dashboard' },
-    { label: 'Customers',  icon: 'people',            route: '/customers' },
-    { label: 'Products',   icon: 'inventory_2',       route: '/products' },
-    { label: 'Orders',     icon: 'receipt_long',      route: '/orders' },
-    { label: 'Stock',      icon: 'warehouse',         route: '/stock' },
-    { label: 'Settings',   icon: 'settings',          route: '/settings', roles: ['ADMIN'] },
-    { label: 'Audit Logs', icon: 'history',           route: '/audit',    roles: ['ADMIN', 'MANAGER'] },
-    { label: 'Users',      icon: 'manage_accounts',   route: '/users',    roles: ['ADMIN'] },
+    { label: 'Dashboard',  icon: 'dashboard',        route: '/app/dashboard' },
+    { label: 'Customers',  icon: 'people',            route: '/app/customers' },
+    { label: 'Products',   icon: 'inventory_2',       route: '/app/products' },
+    { label: 'Orders',     icon: 'receipt_long',      route: '/app/orders' },
+    { label: 'Stock',      icon: 'warehouse',         route: '/app/stock' },
+    { label: 'Analytics',  icon: 'bar_chart',         route: '/app/analytics',  roles: ['ADMIN', 'MANAGER'] },
+    { label: 'Admin',      icon: 'settings',          route: '/app/admin',      roles: ['ADMIN'] },
+    { label: 'Audit Logs', icon: 'history',           route: '/app/audit',      roles: ['ADMIN', 'MANAGER'] },
   ];
 
   visibleNavItems: NavItem[] = [];

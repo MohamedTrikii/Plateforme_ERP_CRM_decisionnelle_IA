@@ -1,5 +1,6 @@
 package com.erp.auth.security;
 
+import com.erp.auth.entity.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -45,6 +46,12 @@ public class JwtTokenProvider {
         if (userDetails.getAuthorities() != null && !userDetails.getAuthorities().isEmpty()) {
             claims.put("role", userDetails.getAuthorities().iterator().next().getAuthority());
         }
+
+        // Embed tenantId so downstream services can enforce multi-tenant isolation
+        if (userDetails instanceof User user && user.getTenantId() != null) {
+            claims.put("tenantId", user.getTenantId());
+        }
+
         return buildToken(claims, userDetails.getUsername(), jwtExpiration);
     }
 

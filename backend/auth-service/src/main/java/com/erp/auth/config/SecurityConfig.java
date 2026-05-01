@@ -18,11 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
 
 /**
  * SecurityConfig – Spring Security 6.x configuration (no WebSecurityConfigurerAdapter).
@@ -52,8 +48,8 @@ public class SecurityConfig {
             // Disable CSRF – not needed for JWT-based stateless APIs
             .csrf(AbstractHttpConfigurer::disable)
 
-            // Configure CORS
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            // CORS handled by the API Gateway — disable at service level
+            .cors(AbstractHttpConfigurer::disable)
 
             // Route authorization rules
             .authorizeHttpRequests(auth -> auth
@@ -80,8 +76,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
@@ -103,21 +98,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder(12);
     }
 
-    // ── CORS configuration ────────────────────────────────────────────────────
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-            "http://localhost:4200",   // Angular dev server
-            "http://localhost:80"      // production nginx
-        ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", config);
-        return source;
-    }
 }

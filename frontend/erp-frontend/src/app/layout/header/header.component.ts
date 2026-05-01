@@ -18,6 +18,12 @@ import { Router } from '@angular/router';
 
       <span class="flex-spacer"></span>
 
+      <!-- Link back to public website -->
+      <a mat-button routerLink="/" class="website-link" matTooltip="Public Website">
+        <mat-icon>public</mat-icon>
+        <span class="website-label">Website</span>
+      </a>
+
       <!-- Theme toggle -->
       <button mat-icon-button (click)="themeService.toggleTheme()"
               [matTooltip]="(themeService.themeMode$ | async) === 'dark' ? 'Switch to light' : 'Switch to dark'">

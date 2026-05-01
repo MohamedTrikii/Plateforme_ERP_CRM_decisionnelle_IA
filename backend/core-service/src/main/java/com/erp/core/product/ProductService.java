@@ -17,6 +17,9 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final AuditService      auditService;
 
+    private static final String ENTITY_NAME    = "Product";
+    private static final String NOT_FOUND_MSG  = "Product not found: ";
+
     @Transactional(readOnly = true)
     public Page<Product> findAll(String tenantId, Pageable pageable) {
         return productRepository.findByTenantId(tenantId, pageable);
@@ -30,7 +33,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Product findById(Long id, String tenantId) {
         return productRepository.findByIdAndTenantId(id, tenantId)
-                .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+                .orElseThrow(() -> new RuntimeException(NOT_FOUND_MSG + id));
     }
 
     @Transactional
@@ -40,14 +43,15 @@ public class ProductService {
             throw new IllegalArgumentException("SKU already exists: " + product.getSku());
         }
         Product saved = productRepository.save(product);
-        auditService.log("Product", String.valueOf(saved.getId()),
+        auditService.log(ENTITY_NAME, String.valueOf(saved.getId()),
                 "CREATE", null, saved, saved.getTenantId());
         return saved;
     }
 
     @Transactional
     public Product update(Long id, Product incoming) {
-        Product existing = findById(id, incoming.getTenantId());
+        Product existing = productRepository.findByIdAndTenantId(id, incoming.getTenantId())
+                .orElseThrow(() -> new RuntimeException(NOT_FOUND_MSG + id));
         Product oldSnapshot = copyProduct(existing);
 
         existing.setName(incoming.getName());
@@ -60,16 +64,17 @@ public class ProductService {
         existing.setStatus(incoming.getStatus());
 
         Product updated = productRepository.save(existing);
-        auditService.log("Product", String.valueOf(id),
+        auditService.log(ENTITY_NAME, String.valueOf(id),
                 "UPDATE", oldSnapshot, updated, incoming.getTenantId());
         return updated;
     }
 
     @Transactional
     public void delete(Long id, String tenantId) {
-        Product existing = findById(id, tenantId);
+        Product existing = productRepository.findByIdAndTenantId(id, tenantId)
+                .orElseThrow(() -> new RuntimeException(NOT_FOUND_MSG + id));
         productRepository.delete(existing);
-        auditService.log("Product", String.valueOf(id),
+        auditService.log(ENTITY_NAME, String.valueOf(id),
                 "DELETE", existing, null, tenantId);
     }
 

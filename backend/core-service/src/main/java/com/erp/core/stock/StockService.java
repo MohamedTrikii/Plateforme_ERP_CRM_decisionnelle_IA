@@ -17,11 +17,14 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class StockService {
 
     private final StockRepository   stockRepository;
     private final ProductRepository productRepository;
     private final AuditService      auditService;
+
+    private static final String NOT_FOUND_MSG = "Stock not found for product: ";
 
     @Transactional(readOnly = true)
     public Page<Stock> findAll(String tenantId, Pageable pageable) {
@@ -31,7 +34,7 @@ public class StockService {
     @Transactional(readOnly = true)
     public Stock findByProduct(Long productId, String tenantId) {
         return stockRepository.findByProductIdAndTenantId(productId, tenantId)
-                .orElseThrow(() -> new RuntimeException("Stock not found for product: " + productId));
+                .orElseThrow(() -> new RuntimeException(NOT_FOUND_MSG + productId));
     }
 
     @Transactional(readOnly = true)
@@ -63,7 +66,8 @@ public class StockService {
     /** Reserve stock when an order is confirmed */
     @Transactional
     public void reserve(Long productId, String tenantId, int qty) {
-        Stock stock = findByProduct(productId, tenantId);
+        Stock stock = stockRepository.findByProductIdAndTenantId(productId, tenantId)
+                .orElseThrow(() -> new RuntimeException(NOT_FOUND_MSG + productId));
         if (stock.getAvailableQuantity() < qty) {
             throw new IllegalStateException("Insufficient stock for product: " + productId);
         }
@@ -74,7 +78,8 @@ public class StockService {
     /** Release reserved stock when an order is cancelled */
     @Transactional
     public void release(Long productId, String tenantId, int qty) {
-        Stock stock = findByProduct(productId, tenantId);
+        Stock stock = stockRepository.findByProductIdAndTenantId(productId, tenantId)
+                .orElseThrow(() -> new RuntimeException(NOT_FOUND_MSG + productId));
         stock.setQuantityReserved(Math.max(0, stock.getQuantityReserved() - qty));
         stockRepository.save(stock);
     }
@@ -82,7 +87,8 @@ public class StockService {
     /** Permanently deduct stock on delivery */
     @Transactional
     public void deduct(Long productId, String tenantId, int qty) {
-        Stock stock = findByProduct(productId, tenantId);
+        Stock stock = stockRepository.findByProductIdAndTenantId(productId, tenantId)
+                .orElseThrow(() -> new RuntimeException(NOT_FOUND_MSG + productId));
         stock.setQuantityOnHand(Math.max(0, stock.getQuantityOnHand() - qty));
         stock.setQuantityReserved(Math.max(0, stock.getQuantityReserved() - qty));
         stockRepository.save(stock);

@@ -37,6 +37,10 @@ public class AnalyticsService {
 
     @Transactional(readOnly = true)
     public Map<String, BigDecimal> getMonthlyRevenue(String tenantId, int months) {
+        return computeMonthlyRevenue(tenantId, months);
+    }
+
+    private Map<String, BigDecimal> computeMonthlyRevenue(String tenantId, int months) {
         LocalDate now = LocalDate.now();
         Map<String, BigDecimal> result = new LinkedHashMap<>();
         for (int i = months - 1; i >= 0; i--) {
@@ -52,6 +56,10 @@ public class AnalyticsService {
 
     @Transactional(readOnly = true)
     public Map<String, Long> getMonthlyOrderVolume(String tenantId, int months) {
+        return computeMonthlyOrderVolume(tenantId, months);
+    }
+
+    private Map<String, Long> computeMonthlyOrderVolume(String tenantId, int months) {
         LocalDate now = LocalDate.now();
         Map<String, Long> result = new LinkedHashMap<>();
         for (int i = months - 1; i >= 0; i--) {
@@ -67,6 +75,10 @@ public class AnalyticsService {
 
     @Transactional(readOnly = true)
     public Map<String, Long> getOrdersByStatus(String tenantId) {
+        return computeOrdersByStatus(tenantId);
+    }
+
+    private Map<String, Long> computeOrdersByStatus(String tenantId) {
         Map<String, Long> result = new LinkedHashMap<>();
         for (Order.OrderStatus status : Order.OrderStatus.values()) {
             result.put(status.name(), orderRepository.countByTenantIdAndStatus(tenantId, status));
@@ -103,9 +115,9 @@ public class AnalyticsService {
                 .revenueThisMonth(thisMonthSafe)
                 .revenueLastMonth(lastMonthSafe)
                 .revenueGrowthPercent(Math.round(growth))
-                .monthlyRevenue(getMonthlyRevenue(tenantId, 12))
-                .monthlyOrderVolume(getMonthlyOrderVolume(tenantId, 12))
-                .ordersByStatus(getOrdersByStatus(tenantId))
+                .monthlyRevenue(computeMonthlyRevenue(tenantId, 12))
+                .monthlyOrderVolume(computeMonthlyOrderVolume(tenantId, 12))
+                .ordersByStatus(computeOrdersByStatus(tenantId))
                 .build();
     }
 

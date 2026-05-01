@@ -1,6 +1,8 @@
 export const environment = {
   production: false,
-  authApiUrl: 'http://localhost:8081/api/v1',
-  coreApiUrl: 'http://localhost:8082/api/v1',
-  defaultTenantId: 'demo',
+  // All traffic routes through the API gateway (port 8083)
+  apiUrl:        'http://localhost:8083/api/v1',
+  authApiUrl:    'http://localhost:8083/api/v1',
+  coreApiUrl:    'http://localhost:8083/api/v1',
+  defaultTenantId: 'default',
 };

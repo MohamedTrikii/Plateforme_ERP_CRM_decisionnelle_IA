@@ -125,7 +125,7 @@ export class RegisterComponent {
     }).subscribe({
       next: () => {
         this.notification.success('Account created! Welcome aboard.');
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/app/dashboard']);
       },
       error: (err) => {
         this.loading = false;

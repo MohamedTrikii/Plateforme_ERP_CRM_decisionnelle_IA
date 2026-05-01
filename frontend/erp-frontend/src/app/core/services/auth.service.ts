@@ -89,7 +89,7 @@ export class AuthService {
     const user: User = {
       id: 0,
       username: response.username,
-      email: '',
+      email: response.email ?? '',
       fullName: response.username,
       role: response.role.replace('ROLE_', '') as User['role'],
       tenantId: response.tenantId,
