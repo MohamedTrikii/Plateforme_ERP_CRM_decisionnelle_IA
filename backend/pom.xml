@@ -70,6 +70,12 @@
                 <version>${jjwt.version}</version>
                 <scope>runtime</scope>
             </dependency>
+            <!-- PostgreSQL Driver - Patched version for CVE-2026-42198 -->
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>42.7.4</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
