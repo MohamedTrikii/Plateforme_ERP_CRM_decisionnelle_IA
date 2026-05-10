@@ -30,7 +30,7 @@ public class SystemConfigController {
      */
     @GetMapping("/public")
     public ResponseEntity<Map<String, String>> getPublic(
-            @RequestParam String tenantId) {
+            @RequestParam("tenantId") String tenantId) {
         return ResponseEntity.ok(configService.getPublicConfig(tenantId));
     }
 
@@ -38,7 +38,7 @@ public class SystemConfigController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<List<SystemConfig>> getAll(
-            @RequestParam String tenantId) {
+            @RequestParam("tenantId") String tenantId) {
         return ResponseEntity.ok(configService.getAll(tenantId));
     }
 
@@ -46,7 +46,7 @@ public class SystemConfigController {
     @GetMapping("/map")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Map<String, String>> getMap(
-            @RequestParam String tenantId) {
+            @RequestParam("tenantId") String tenantId) {
         return ResponseEntity.ok(configService.getConfigMap(tenantId));
     }
 
@@ -54,8 +54,8 @@ public class SystemConfigController {
     @PutMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SystemConfig> upsert(
-            @RequestParam String tenantId,
-            @Valid @RequestBody SystemConfig config) {
+            @RequestParam("tenantId") String tenantId,
+            @Valid @RequestBody com.erp.core.systemconfig.SystemConfigUpsertRequest config) {
         return ResponseEntity.ok(configService.upsert(tenantId, config));
     }
 
@@ -63,7 +63,7 @@ public class SystemConfigController {
     @PutMapping("/bulk")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> bulkUpsert(
-            @RequestParam String tenantId,
+            @RequestParam("tenantId") String tenantId,
             @RequestBody Map<String, String> values) {
         configService.bulkUpsert(tenantId, values);
         return ResponseEntity.ok().build();
@@ -74,7 +74,7 @@ public class SystemConfigController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
-            @RequestParam String tenantId) {
+            @RequestParam("tenantId") String tenantId) {
         configService.delete(id, tenantId);
         return ResponseEntity.noContent().build();
     }

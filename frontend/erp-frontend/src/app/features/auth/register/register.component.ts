@@ -104,10 +104,10 @@ export class RegisterComponent {
   get f() { return this.registerForm.controls; }
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private notification: NotificationService,
-    private router: Router,
+    private readonly fb: FormBuilder,
+    private readonly authService: AuthService,
+    private readonly notification: NotificationService,
+    private readonly router: Router,
   ) {}
 
   onSubmit(): void {
@@ -125,7 +125,7 @@ export class RegisterComponent {
     }).subscribe({
       next: () => {
         this.notification.success('Account created! Welcome aboard.');
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/app/dashboard']);
       },
       error: (err) => {
         this.loading = false;

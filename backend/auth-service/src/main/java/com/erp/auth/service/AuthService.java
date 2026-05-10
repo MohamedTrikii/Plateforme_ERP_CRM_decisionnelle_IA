@@ -88,6 +88,7 @@ public class AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .username(user.getUsername())
+                .email(user.getEmail())
                 .role(user.getRole().name())
                 .tenantId(user.getTenantId())
                 .expiresIn(86400)   // 24 h

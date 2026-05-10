@@ -2,6 +2,7 @@ package com.erp.core.customer;
 
 import com.erp.core.audit.AuditService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,9 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final AuditService       auditService;
 
+    private static final String ENTITY_NAME    = "Customer";
+    private static final String NOT_FOUND_MSG  = "Customer not found: ";
+
     @Transactional(readOnly = true)
     public Page<Customer> findAll(String tenantId, Pageable pageable) {
         return customerRepository.findByTenantId(tenantId, pageable);
@@ -33,7 +37,7 @@ public class CustomerService {
     @Transactional(readOnly = true)
     public Customer findById(Long id, String tenantId) {
         return customerRepository.findByIdAndTenantId(id, tenantId)
-                .orElseThrow(() -> new RuntimeException("Customer not found: " + id));
+                .orElseThrow(() -> new RuntimeException(NOT_FOUND_MSG + id));
     }
 
     @Transactional
@@ -43,15 +47,15 @@ public class CustomerService {
             throw new IllegalArgumentException("Email already exists in this tenant");
         }
         Customer saved = customerRepository.save(customer);
-        // Audit: no previous state for CREATE
-        auditService.log("Customer", String.valueOf(saved.getId()),
+        auditService.log(ENTITY_NAME, String.valueOf(saved.getId()),
                 "CREATE", null, saved, saved.getTenantId());
         return saved;
     }
 
     @Transactional
     public Customer update(Long id, Customer incoming) {
-        Customer existing = findById(id, incoming.getTenantId());
+        Customer existing = customerRepository.findByIdAndTenantId(id, incoming.getTenantId())
+                .orElseThrow(() -> new RuntimeException(NOT_FOUND_MSG + id));
         Customer oldSnapshot = copyCustomer(existing);
 
         existing.setName(incoming.getName());
@@ -62,16 +66,17 @@ public class CustomerService {
         existing.setStatus(incoming.getStatus());
 
         Customer updated = customerRepository.save(existing);
-        auditService.log("Customer", String.valueOf(id),
+        auditService.log(ENTITY_NAME, String.valueOf(id),
                 "UPDATE", oldSnapshot, updated, incoming.getTenantId());
         return updated;
     }
 
     @Transactional
     public void delete(Long id, String tenantId) {
-        Customer existing = findById(id, tenantId);
+        Customer existing = customerRepository.findByIdAndTenantId(id, tenantId)
+                .orElseThrow(() -> new RuntimeException(NOT_FOUND_MSG + id));
         customerRepository.delete(existing);
-        auditService.log("Customer", String.valueOf(id),
+        auditService.log(ENTITY_NAME, String.valueOf(id),
                 "DELETE", existing, null, tenantId);
     }
 

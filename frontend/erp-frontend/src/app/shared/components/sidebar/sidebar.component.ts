@@ -28,7 +28,7 @@ export class SidebarComponent implements OnInit {
   enabledModules: string[] = [];
 
   constructor(
-    private themeService: ThemeService,
+    private readonly themeService: ThemeService,
     public  authService:  AuthService
   ) {}
 

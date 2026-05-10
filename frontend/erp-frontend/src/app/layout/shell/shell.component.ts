@@ -1,6 +1,5 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { MatSidenav } from '@angular/material/sidenav';
 import { ConfigService } from '../../core/services/config.service';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -38,9 +37,9 @@ export class ShellComponent implements OnInit {
   isMobile = false;
 
   constructor(
-    private breakpoint: BreakpointObserver,
-    private configService: ConfigService,
-    private authService: AuthService,
+    private readonly breakpoint: BreakpointObserver,
+    private readonly configService: ConfigService,
+    private readonly authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -49,7 +48,7 @@ export class ShellComponent implements OnInit {
       this.isMobile = result.matches;
     });
 
-    // Load tenant config & apply theme
+    // Load tenant config & apply theme; use full config if authenticated
     const tenantId = this.authService.getTenantId();
     this.configService.loadPublicConfig(tenantId).subscribe();
   }

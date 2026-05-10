@@ -27,7 +27,7 @@ import { NotificationService } from '../../../core/services/notification.service
             <span matPrefix>MAD&nbsp;</span>
           </mat-form-field>
           <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Cost Price</mat-label>
+            <mat-label>Cost Price *</mat-label>
             <input matInput formControlName="costPrice" type="number" min="0">
             <span matPrefix>MAD&nbsp;</span>
           </mat-form-field>
@@ -67,7 +67,7 @@ export class ProductFormDialogComponent implements OnInit {
     name:        ['', Validators.required],
     sku:         ['', Validators.required],
     price:       [null, [Validators.required, Validators.min(0)]],
-    costPrice:   [null],
+    costPrice:   [null, [Validators.required, Validators.min(0)]],
     category:    [''],
     description: [''],
     imageUrl:    [''],
@@ -78,9 +78,9 @@ export class ProductFormDialogComponent implements OnInit {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { product?: Product; tenantId: string },
     readonly dialogRef: MatDialogRef<ProductFormDialogComponent>,
-    private fb: FormBuilder,
-    private productService: ProductService,
-    private notification: NotificationService,
+    private readonly fb: FormBuilder,
+    private readonly productService: ProductService,
+    private readonly notification: NotificationService,
   ) {}
 
   ngOnInit(): void {

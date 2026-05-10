@@ -25,12 +25,31 @@ $frontend  = Join-Path $root "frontend\erp-frontend"
 Write-Title "Verification des prerequis"
 
 # Auto-detect modern Java if default is too old (Java 8) or missing
-if ((& java -version 2>&1 | Select-String "1.8.0") -or -not (Get-Command java -ErrorAction SilentlyContinue)) {
-    $modernJava = Get-ChildItem "C:\Program Files\Java\jdk-23\bin\java.exe", "C:\Program Files\Java\jdk-20\bin\java.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+$javaVersion = (& java -version 2>&1 | Select-Object -First 1) -as [string]
+if (($javaVersion -match "1\.8\.0") -or -not (Get-Command java -ErrorAction SilentlyContinue)) {
+    $modernJava = Get-ChildItem `
+        "C:\Program Files\Java\jdk-26\bin\java.exe",
+        "C:\Program Files\Java\jdk-23\bin\java.exe",
+        "C:\Program Files\Java\jdk-21\bin\java.exe",
+        "C:\Program Files\Java\jdk-20\bin\java.exe" `
+        -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($modernJava) {
         $Env:JAVA_HOME = $modernJava.Directory.Parent.FullName
         $Env:Path = "$($modernJava.DirectoryName);$Env:Path"
         Write-Ok "Utilisation automatique de modern Java trouve dans : $($modernJava.FullName)"
+    }
+}
+# Si JAVA_HOME n'est pas defini, utiliser jdk-26 par defaut
+if (-not $Env:JAVA_HOME -or -not (Test-Path $Env:JAVA_HOME)) {
+    $fallbackJdk = Get-ChildItem `
+        "C:\Program Files\Java\jdk-26",
+        "C:\Program Files\Java\jdk-23",
+        "C:\Program Files\Java\jdk-21" `
+        -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($fallbackJdk) {
+        $Env:JAVA_HOME = $fallbackJdk.FullName
+        $Env:Path = "$($fallbackJdk.FullName)\bin;$Env:Path"
+        Write-Ok "JAVA_HOME defini sur : $($Env:JAVA_HOME)"
     }
 }
 
@@ -75,6 +94,14 @@ Get-Content $envFile | Where-Object { $_ -match "^\s*[^#]" } | ForEach-Object {
     }
 }
 
+# Keep Spring datasource variables aligned with PostgreSQL variables from .env
+if (-not $Env:DB_USERNAME -and $Env:POSTGRES_USER) {
+    $Env:DB_USERNAME = $Env:POSTGRES_USER
+}
+if (-not $Env:DB_PASSWORD -and $Env:POSTGRES_PASSWORD) {
+    $Env:DB_PASSWORD = $Env:POSTGRES_PASSWORD
+}
+
 # --- Helper : ouvrir un nouveau terminal PowerShell --------------------------
 function Start-Service {
     param (
@@ -84,9 +111,10 @@ function Start-Service {
         [string] $Color = "DarkBlue"
     )
     Write-Ok "Demarrage de $Name dans une nouvelle fenetre..."
+    $jh = $Env:JAVA_HOME
     Start-Process powershell.exe -ArgumentList `
         "-NoExit", "-Command",
-        "cd '$WorkDir'; `$Host.UI.RawUI.WindowTitle = '$Name'; $Command" `
+        "cd '$WorkDir'; `$env:JAVA_HOME='$jh'; `$env:PATH='$jh\bin;' + `$env:PATH; `$Host.UI.RawUI.WindowTitle = '$Name'; $Command" `
         -WindowStyle Normal
     Start-Sleep -Seconds 2
 }
@@ -95,7 +123,10 @@ function Start-Service {
 Write-Title "Compilation Maven (backend)"
 Push-Location $backend
 try {
-    mvn clean package -DskipTests -q
+    $mvnCmd = if (Get-Command mvn -ErrorAction SilentlyContinue) { "mvn" } else { "C:\PFA\tools\apache-maven-3.9.9\bin\mvn.cmd" }
+    Write-Ok "Java utilise pour la compilation : $(& java -version 2>&1 | Select-Object -First 1)"
+    & $mvnCmd clean package -DskipTests -q
+    if ($LASTEXITCODE -ne 0) { throw "Maven build failed with exit code $LASTEXITCODE" }
     Write-Ok "Build Maven termine."
 } catch {
     Write-Fail "Build Maven echoue - verifiez les erreurs ci-dessus."
@@ -109,19 +140,19 @@ Write-Title "Lancement des microservices Spring Boot"
 Start-Service `
     -Name     "auth-service (8081)" `
     -WorkDir  (Join-Path $backend "auth-service") `
-    -Command  "mvn spring-boot:run"
+    -Command  "C:\PFA\tools\apache-maven-3.9.9\bin\mvn.cmd spring-boot:run"
 
 # --- 3. core-service ----------------------------------------------------------
 Start-Service `
     -Name     "core-service (8082)" `
     -WorkDir  (Join-Path $backend "core-service") `
-    -Command  "mvn spring-boot:run"
+    -Command  "C:\PFA\tools\apache-maven-3.9.9\bin\mvn.cmd spring-boot:run"
 
 # --- 4. api-gateway -----------------------------------------------------------
 Start-Service `
     -Name     "api-gateway (8083)" `
     -WorkDir  (Join-Path $backend "api-gateway") `
-    -Command  "mvn spring-boot:run"
+    -Command  "C:\PFA\tools\apache-maven-3.9.9\bin\mvn.cmd spring-boot:run"
 
 # --- 5. ai-service (Python) ---------------------------------------------------
 Write-Title "Lancement du service IA (Python)"

@@ -1,5 +1,5 @@
 import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
-import { ConfigService } from '../services/config.service';
+import { ConfigService } from '../../core/services/config.service';
 import { CONFIG_KEYS, ConfigMap } from '../models/system-config.model';
 
 /**
@@ -15,10 +15,10 @@ import { CONFIG_KEYS, ConfigMap } from '../models/system-config.model';
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
 
-  private renderer: Renderer2;
+  private readonly renderer: Renderer2;
 
   constructor(
-    private configService: ConfigService,
+    private readonly configService: ConfigService,
     rendererFactory: RendererFactory2
   ) {
     this.renderer = rendererFactory.createRenderer(null, null);
@@ -76,7 +76,7 @@ export class ThemeService {
    * Used to derive background shades from the primary color.
    */
   private lightenColor(hex: string, amount: number): string {
-    const num = parseInt(hex.replace('#', ''), 16);
+    const num = Number.parseInt(hex.replace('#', ''), 16);
     const r   = Math.min(255, (num >> 16) + amount);
     const g   = Math.min(255, ((num >> 8) & 0x00ff) + amount);
     const b   = Math.min(255, (num & 0x0000ff) + amount);

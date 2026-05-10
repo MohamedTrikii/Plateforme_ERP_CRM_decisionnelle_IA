@@ -10,6 +10,11 @@ $ErrorActionPreference = "Stop"
 $root    = Split-Path -Parent $MyInvocation.MyCommand.Path
 $backend = Join-Path $root "backend"
 $aiSvc   = Join-Path $root "ai-service"
+$mvn     = Join-Path $root "tools\apache-maven-3.9.9\bin\mvn.cmd"
+
+# ─── Java 26 ─────────────────────────────────────────────────────────────────
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-26"
+$env:PATH      = "$env:JAVA_HOME\bin;$env:PATH"
 
 function Write-Title ($msg) { Write-Host "`n==> $msg" -ForegroundColor Cyan }
 function Write-Ok    ($msg) { Write-Host "  [OK]  $msg" -ForegroundColor Green }
@@ -24,6 +29,15 @@ if (Test-Path $envFile) {
             [System.Environment]::SetEnvironmentVariable($kv[0].Trim(), $kv[1].Trim(), "Process")
         }
     }
+
+    # Keep Spring datasource variables aligned with PostgreSQL variables from .env
+    if (-not $env:DB_USERNAME -and $env:POSTGRES_USER) {
+        $env:DB_USERNAME = $env:POSTGRES_USER
+    }
+    if (-not $env:DB_PASSWORD -and $env:POSTGRES_PASSWORD) {
+        $env:DB_PASSWORD = $env:POSTGRES_PASSWORD
+    }
+
     Write-Ok ".env chargé."
 } else {
     Write-Fail ".env introuvable – lancez d'abord start.ps1 pour le créer."
@@ -42,7 +56,7 @@ try {
 # ─── Build Maven ─────────────────────────────────────────────────────────────
 Write-Title "Compilation Maven"
 Push-Location $backend
-mvn clean package -DskipTests -q
+& $mvn clean package -DskipTests -q
 Write-Ok "Build terminé."
 Pop-Location
 
@@ -54,11 +68,18 @@ foreach ($svc in @(
     @{ Name = "core-service (8082)"; Dir = "core-service" },
     @{ Name = "api-gateway  (8080)"; Dir = "api-gateway"  }
 )) {
-    $dir = Join-Path $backend $svc.Dir
+    $svcDir = Join-Path $backend $svc.Dir
     Write-Ok "Démarrage $($svc.Name)…"
-    Start-Process powershell.exe `
-        -ArgumentList "-NoExit", "-Command",
-        "cd '$dir'; `$Host.UI.RawUI.WindowTitle = '$($svc.Name)'; mvn spring-boot:run"
+    
+    $cmd = @"
+`$env:JAVA_HOME = 'C:\Program Files\Java\jdk-26'
+`$env:PATH = "`$env:JAVA_HOME\bin;`$env:PATH"
+cd "$svcDir"
+`$Host.UI.RawUI.WindowTitle = '$($svc.Name)'
+& "$mvn" spring-boot:run
+"@
+    
+    Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", $cmd
     Start-Sleep -Seconds 1
 }
 

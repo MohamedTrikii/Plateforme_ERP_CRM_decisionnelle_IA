@@ -19,10 +19,10 @@ export class AuthService {
   private readonly REFRESH_KEY = 'erp_refresh_token';
   private readonly USER_KEY    = 'erp_current_user';
 
-  private currentUserSubject = new BehaviorSubject<User | null>(this.loadStoredUser());
+  private readonly currentUserSubject = new BehaviorSubject<User | null>(this.loadStoredUser());
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private readonly http: HttpClient, private readonly router: Router) {}
 
   // ── Login ─────────────────────────────────────────────────────────────────
 
@@ -89,7 +89,7 @@ export class AuthService {
     const user: User = {
       id: 0,
       username: response.username,
-      email: '',
+      email: response.email ?? '',
       fullName: response.username,
       role: response.role.replace('ROLE_', '') as User['role'],
       tenantId: response.tenantId,

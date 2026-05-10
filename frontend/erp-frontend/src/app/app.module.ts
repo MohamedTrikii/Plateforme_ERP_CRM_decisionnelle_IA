@@ -19,19 +19,32 @@ import { errorInterceptor } from './core/interceptors/error.interceptor';
 
 /**
  * Application routes – lazy-loads each feature module.
- * Protected routes use authGuard; admin-only routes also use adminGuard.
+ *
+ * Route tree:
+ *  /                     → public website (no auth)
+ *  /home|about|services|gallery|contact → public pages (under PublicLayout)
+ *  /auth/login|register  → auth pages (no auth)
+ *  /dashboard|customers|products|orders|stock|analytics → ERP shell (authGuard)
+ *  /admin                → admin panel (authGuard + adminGuard)
  */
 const routes: Routes = [
-  // Auth routes (public)
+  // ── Public website (no auth) ──────────────────────────────────────────────
+  {
+    path: '',
+    loadChildren: () =>
+      import('./features/public/public.module').then(m => m.PublicModule),
+  },
+
+  // ── Auth pages ────────────────────────────────────────────────────────────
   {
     path: 'auth',
     loadChildren: () =>
       import('./features/auth/auth.module').then(m => m.AuthModule),
   },
 
-  // Protected shell – all authenticated pages live here
+  // ── Protected ERP shell ───────────────────────────────────────────────────
   {
-    path: '',
+    path: 'app',
     component: ShellComponent,
     canActivate: [authGuard],
     children: [
@@ -40,6 +53,11 @@ const routes: Routes = [
         path: 'dashboard',
         loadChildren: () =>
           import('./features/dashboard/dashboard.module').then(m => m.DashboardModule),
+      },
+      {
+        path: 'customers',
+        loadChildren: () =>
+          import('./features/customers/customers.module').then(m => m.CustomersModule),
       },
       {
         path: 'products',
@@ -52,21 +70,27 @@ const routes: Routes = [
           import('./features/orders/orders.module').then(m => m.OrdersModule),
       },
       {
-        path: 'customers',
-        loadChildren: () =>
-          import('./features/customers/customers.module').then(m => m.CustomersModule),
-      },
-      {
         path: 'stock',
-        canActivate: [adminGuard],
         loadChildren: () =>
           import('./features/stock/stock.module').then(m => m.StockModule),
+      },
+      {
+        path: 'analytics',
+        canActivate: [adminGuard],
+        loadChildren: () =>
+          import('./features/analytics/analytics.module').then(m => m.AnalyticsModule),
+      },
+      {
+        path: 'admin',
+        canActivate: [adminGuard],
+        loadChildren: () =>
+          import('./modules/admin/admin.module').then(m => m.AdminModule),
       },
     ],
   },
 
   // Fallback
-  { path: '**', redirectTo: 'dashboard' },
+  { path: '**', redirectTo: '' },
 ];
 
 @NgModule({

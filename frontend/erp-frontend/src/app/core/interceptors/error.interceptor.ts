@@ -31,7 +31,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           break;
         case 403:
           notification.error('Access denied. You do not have permission.');
-          router.navigate(['/dashboard']);
+          router.navigate(['/app/dashboard']);
           break;
         case 404:
           // Let components handle 404s

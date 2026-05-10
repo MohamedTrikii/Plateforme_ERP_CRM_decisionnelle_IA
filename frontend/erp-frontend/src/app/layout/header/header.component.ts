@@ -18,6 +18,12 @@ import { Router } from '@angular/router';
 
       <span class="flex-spacer"></span>
 
+      <!-- Link back to public website -->
+      <a mat-button routerLink="/" class="website-link" matTooltip="Public Website">
+        <mat-icon>public</mat-icon>
+        <span class="website-label">Website</span>
+      </a>
+
       <!-- Theme toggle -->
       <button mat-icon-button (click)="themeService.toggleTheme()"
               [matTooltip]="(themeService.themeMode$ | async) === 'dark' ? 'Switch to light' : 'Switch to dark'">
@@ -65,8 +71,8 @@ export class HeaderComponent {
   constructor(
     readonly authService: AuthService,
     readonly themeService: ThemeService,
-    private configService: ConfigService,
-    private router: Router,
+    private readonly configService: ConfigService,
+    private readonly router: Router,
   ) {
     this.companyName = this.configService.getCompanyName();
     this.configService.config$.subscribe(() => {
