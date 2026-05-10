@@ -82,10 +82,10 @@ export class LoginComponent {
   hidePassword = true;
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private notification: NotificationService,
-    private router: Router,
+    private readonly fb: FormBuilder,
+    private readonly authService: AuthService,
+    private readonly notification: NotificationService,
+    private readonly router: Router,
   ) {}
 
   onSubmit(): void {

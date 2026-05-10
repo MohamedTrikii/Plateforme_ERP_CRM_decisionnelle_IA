@@ -57,7 +57,7 @@ public class SystemConfigService {
 
     /** Create or update a single config key. */
     @Transactional
-    public SystemConfig upsert(String tenantId, SystemConfig incoming) {
+    public SystemConfig upsert(String tenantId, com.erp.core.systemconfig.SystemConfigUpsertRequest incoming) {
         SystemConfig config = configRepository
                 .findByTenantIdAndConfigKey(tenantId, incoming.getConfigKey())
                 .orElse(SystemConfig.builder()

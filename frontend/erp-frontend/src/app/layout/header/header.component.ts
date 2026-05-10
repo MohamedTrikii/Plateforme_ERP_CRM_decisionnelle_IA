@@ -71,8 +71,8 @@ export class HeaderComponent {
   constructor(
     readonly authService: AuthService,
     readonly themeService: ThemeService,
-    private configService: ConfigService,
-    private router: Router,
+    private readonly configService: ConfigService,
+    private readonly router: Router,
   ) {
     this.companyName = this.configService.getCompanyName();
     this.configService.config$.subscribe(() => {

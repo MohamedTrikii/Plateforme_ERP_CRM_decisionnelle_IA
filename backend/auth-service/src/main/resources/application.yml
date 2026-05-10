@@ -5,9 +5,9 @@ spring:
   application:
     name: auth-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/erp_auth
-    username: ${DB_USERNAME:erp}
-    password: ${DB_PASSWORD:erp_pass}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:55432}/erp_auth
+    username: ${DB_USERNAME:${POSTGRES_USER:erp}}
+    password: ${DB_PASSWORD:${POSTGRES_PASSWORD:erp_pass}}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

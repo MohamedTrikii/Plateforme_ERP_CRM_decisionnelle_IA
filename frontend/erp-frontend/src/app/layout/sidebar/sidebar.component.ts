@@ -91,8 +91,8 @@ export class SidebarComponent implements OnInit {
   visibleNavItems: NavItem[] = [];
 
   constructor(
-    private authService: AuthService,
-    private configService: ConfigService,
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
   ) {}
 
   ngOnInit(): void {

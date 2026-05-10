@@ -75,8 +75,7 @@ spring:
               uri: ${AI_SERVICE_URL:http://localhost:8000}
               predicates:
                 - Path=/api/v1/ai/**
-              filters:
-                - StripPrefix=3
+              filters: []
 
 management:
   endpoints:

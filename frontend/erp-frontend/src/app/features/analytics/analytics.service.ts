@@ -20,7 +20,7 @@ export class AnalyticsService {
 
   private readonly BASE = `${environment.coreApiUrl}/analytics`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   getSummary(tenantId: string): Observable<AnalyticsSummary> {
     return this.http.get<AnalyticsSummary>(`${this.BASE}/summary`, { params: { tenantId } });
