@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { AuthResponse, LoginRequest, RegisterRequest, User } from '../models/user.model';
+import { AuthResponse, LoginRequest, RegisterRequest } from '../models/user.model';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -22,14 +22,14 @@ export class AuthService {
   private readonly REFRESH_KEY = 'erp_refresh_token';
   private readonly USER_KEY    = 'erp_user';
 
-  private currentUserSubject = new BehaviorSubject<Partial<AuthResponse> | null>(
+  private readonly currentUserSubject = new BehaviorSubject<Partial<AuthResponse> | null>(
     this.loadStoredUser()
   );
 
   /** Emits whenever the logged-in user changes */
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private readonly http: HttpClient, private readonly router: Router) {}
 
   // ── Login ─────────────────────────────────────────────────────────────────
 

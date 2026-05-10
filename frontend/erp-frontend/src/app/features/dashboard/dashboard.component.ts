@@ -81,7 +81,7 @@ import { NotificationService } from '../../core/services/notification.service';
               <tr mat-header-row *matHeaderRowDef="['productName','totalQuantity','totalRevenue']"></tr>
               <tr mat-row *matRowDef="let row; columns: ['productName','totalQuantity','totalRevenue']"></tr>
             </table>
-            <app-empty-state *ngIf="!stats.topProducts?.length" icon="bar_chart"
+            <app-empty-state *ngIf="!stats.topProducts.length" icon="bar_chart"
               title="No sales data" message="Orders will appear here once delivered"></app-empty-state>
           </mat-card-content>
         </mat-card>
@@ -145,9 +145,9 @@ export class DashboardComponent implements OnInit {
   };
 
   constructor(
-    private dashboardService: DashboardService,
-    private authService: AuthService,
-    private notification: NotificationService,
+    private readonly dashboardService: DashboardService,
+    private readonly authService: AuthService,
+    private readonly notification: NotificationService,
   ) {}
 
   ngOnInit(): void {

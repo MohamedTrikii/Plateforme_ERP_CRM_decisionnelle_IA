@@ -4,9 +4,14 @@
 -- the first time (via /docker-entrypoint-initdb.d/).
 -- ============================================================
 
--- Create the two application databases
-CREATE DATABASE erp_auth;
-CREATE DATABASE erp_core;
+-- Create the two application databases (idempotent)
+SELECT 'CREATE DATABASE erp_auth'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'erp_auth')
+\gexec
+
+SELECT 'CREATE DATABASE erp_core'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'erp_core')
+\gexec
 
 -- Grant all privileges to the application user
 GRANT ALL PRIVILEGES ON DATABASE erp_auth TO erp;

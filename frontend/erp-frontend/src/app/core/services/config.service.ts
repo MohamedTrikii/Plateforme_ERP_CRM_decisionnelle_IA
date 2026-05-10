@@ -19,12 +19,12 @@ export class ConfigService {
 
   private readonly BASE_URL = `${environment.coreApiUrl}/config`;
 
-  private configSubject = new BehaviorSubject<Record<string, string>>({});
+  private readonly configSubject = new BehaviorSubject<Record<string, string>>({});
   config$ = this.configSubject.asObservable();
 
   constructor(
-    private http: HttpClient,
-    private themeService: ThemeService,
+    private readonly http: HttpClient,
+    private readonly themeService: ThemeService,
   ) {}
 
   /** Load public config for a tenant and apply the theme. */

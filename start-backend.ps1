@@ -29,6 +29,15 @@ if (Test-Path $envFile) {
             [System.Environment]::SetEnvironmentVariable($kv[0].Trim(), $kv[1].Trim(), "Process")
         }
     }
+
+    # Keep Spring datasource variables aligned with PostgreSQL variables from .env
+    if (-not $env:DB_USERNAME -and $env:POSTGRES_USER) {
+        $env:DB_USERNAME = $env:POSTGRES_USER
+    }
+    if (-not $env:DB_PASSWORD -and $env:POSTGRES_PASSWORD) {
+        $env:DB_PASSWORD = $env:POSTGRES_PASSWORD
+    }
+
     Write-Ok ".env chargé."
 } else {
     Write-Fail ".env introuvable – lancez d'abord start.ps1 pour le créer."

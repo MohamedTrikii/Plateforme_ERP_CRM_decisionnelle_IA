@@ -94,6 +94,14 @@ Get-Content $envFile | Where-Object { $_ -match "^\s*[^#]" } | ForEach-Object {
     }
 }
 
+# Keep Spring datasource variables aligned with PostgreSQL variables from .env
+if (-not $Env:DB_USERNAME -and $Env:POSTGRES_USER) {
+    $Env:DB_USERNAME = $Env:POSTGRES_USER
+}
+if (-not $Env:DB_PASSWORD -and $Env:POSTGRES_PASSWORD) {
+    $Env:DB_PASSWORD = $Env:POSTGRES_PASSWORD
+}
+
 # --- Helper : ouvrir un nouveau terminal PowerShell --------------------------
 function Start-Service {
     param (

@@ -55,7 +55,7 @@ public class SystemConfigController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SystemConfig> upsert(
             @RequestParam("tenantId") String tenantId,
-            @Valid @RequestBody SystemConfig config) {
+            @Valid @RequestBody com.erp.core.systemconfig.SystemConfigUpsertRequest config) {
         return ResponseEntity.ok(configService.upsert(tenantId, config));
     }
 
