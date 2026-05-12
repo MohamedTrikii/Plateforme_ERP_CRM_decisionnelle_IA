@@ -6,8 +6,8 @@ spring:
     name: auth-service
   datasource:
     url: jdbc:postgresql://localhost:5432/erp_auth
-    username: ${DB_USERNAME:erp_user}
-    password: ${DB_PASSWORD:erp_pass}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:0000}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -18,7 +18,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
   # Connection pool
-  datasource-hikari:
+  hikari:
     maximum-pool-size: 10
     minimum-idle: 2
 

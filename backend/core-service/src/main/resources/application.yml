@@ -6,8 +6,8 @@ spring:
     name: core-service
   datasource:
     url: jdbc:postgresql://localhost:5432/erp_core
-    username: ${DB_USERNAME:erp_user}
-    password: ${DB_PASSWORD:erp_pass}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:0000}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
