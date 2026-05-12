@@ -2,6 +2,7 @@ package com.erp.core.systemconfig;
 
 import com.erp.core.audit.AuditService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +22,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SystemConfigService {
 
+    private static final String ENTITY_NAME = "SystemConfig";
+
     private final SystemConfigRepository configRepository;
     private final AuditService           auditService;
 
     /** Returns all config entries for a tenant as a flat key→value map. */
     @Transactional(readOnly = true)
-    public Map<String, String> getConfigMap(String tenantId) {
+    public Map<String, String> getConfigMap(@NonNull String tenantId) {
         return configRepository.findByTenantId(tenantId)
                 .stream()
                 .collect(Collectors.toMap(
@@ -37,13 +40,13 @@ public class SystemConfigService {
 
     /** Returns all config entries (full objects) for a tenant. */
     @Transactional(readOnly = true)
-    public List<SystemConfig> getAll(String tenantId) {
+    public List<SystemConfig> getAll(@NonNull String tenantId) {
         return configRepository.findByTenantId(tenantId);
     }
 
     /** Returns only the public-facing config (safe to expose to non-admins). */
     @Transactional(readOnly = true)
-    public Map<String, String> getPublicConfig(String tenantId) {
+    public Map<String, String> getPublicConfig(@NonNull String tenantId) {
         return configRepository.findByTenantIdAndIsPublicTrue(tenantId)
                 .stream()
                 .collect(Collectors.toMap(
@@ -72,7 +75,7 @@ public class SystemConfigService {
         SystemConfig saved = configRepository.save(config);
 
         // Audit every config change
-        auditService.log("SystemConfig",
+        auditService.log(ENTITY_NAME,
                 tenantId + ":" + incoming.getConfigKey(),
                 "CONFIG_CHANGE",
                 oldValue,
@@ -83,7 +86,7 @@ public class SystemConfigService {
 
     /** Bulk save a map of key→value pairs (e.g. from a theme editor). */
     @Transactional
-    public void bulkUpsert(String tenantId, Map<String, String> values) {
+    public void bulkUpsert(@NonNull String tenantId, Map<String, String> values) {
         values.forEach((key, value) -> {
             SystemConfig sc = configRepository
                     .findByTenantIdAndConfigKey(tenantId, key)
@@ -94,19 +97,19 @@ public class SystemConfigService {
             String oldValue = sc.getConfigValue();
             sc.setConfigValue(value);
             configRepository.save(sc);
-            auditService.log("SystemConfig", tenantId + ":" + key,
+            auditService.log(ENTITY_NAME, tenantId + ":" + key,
                     "CONFIG_CHANGE", oldValue, value, tenantId);
         });
     }
 
     @Transactional
-    public void delete(Long id, String tenantId) {
+    public void delete(@NonNull Long id, @NonNull String tenantId) {
         configRepository.findById(id).ifPresent(sc -> {
             if (!sc.getTenantId().equals(tenantId)) {
                 throw new SecurityException("Tenant mismatch");
             }
             configRepository.delete(sc);
-            auditService.log("SystemConfig", String.valueOf(id),
+            auditService.log(ENTITY_NAME, String.valueOf(id),
                     "DELETE", sc.getConfigValue(), null, tenantId);
         });
     }

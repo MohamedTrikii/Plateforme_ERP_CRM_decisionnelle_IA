@@ -1,10 +1,22 @@
 import { Component } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
+  standalone: true,
+  imports: [
+    CommonModule, ReactiveFormsModule, RouterModule,
+    MatFormFieldModule, MatInputModule, MatButtonModule,
+    MatIconModule, MatProgressSpinnerModule,
+  ],
   selector: 'app-register',
   template: `
     <div class="auth-container">
@@ -104,10 +116,10 @@ export class RegisterComponent {
   get f() { return this.registerForm.controls; }
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private notification: NotificationService,
-    private router: Router,
+    private readonly fb: FormBuilder,
+    private readonly authService: AuthService,
+    private readonly notification: NotificationService,
+    private readonly router: Router,
   ) {}
 
   onSubmit(): void {
@@ -127,7 +139,7 @@ export class RegisterComponent {
         this.notification.success('Account created! Welcome aboard.');
         this.router.navigate(['/dashboard']);
       },
-      error: (err) => {
+      error: (err: { error?: { detail?: string } }) => {
         this.loading = false;
         this.notification.error(err?.error?.detail ?? 'Registration failed. Please try again.');
       },

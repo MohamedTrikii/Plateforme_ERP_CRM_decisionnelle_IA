@@ -1,4 +1,7 @@
 import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 
 /**
  * StatCardComponent – KPI card for the dashboard.
@@ -6,6 +9,8 @@ import { Component, Input } from '@angular/core';
  */
 @Component({
   selector: 'app-stat-card',
+  standalone: true,
+  imports: [CommonModule, MatCardModule, MatIconModule],
   template: `
     <mat-card class="stat-card" [class.accent]="color === 'accent'"
               [class.success]="color === 'success'" [class.warn]="color === 'warn'">

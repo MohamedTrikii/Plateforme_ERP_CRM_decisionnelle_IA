@@ -29,6 +29,9 @@ import { NotificationService } from '../../../core/services/notification.service
             <input matInput formControlName="username" placeholder="johndoe">
             <mat-icon matPrefix>person</mat-icon>
             <mat-error *ngIf="f['username'].hasError('required')">Username is required</mat-error>
+            <mat-error *ngIf="f['username'].hasError('minlength')">Username must be at least 3 characters</mat-error>
+            <mat-error *ngIf="f['username'].hasError('maxlength')">Username must be at most 50 characters</mat-error>
+            <mat-error *ngIf="f['username'].hasError('pattern')">Only letters, numbers, and underscores are allowed</mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="w-100">
@@ -93,7 +96,7 @@ import { NotificationService } from '../../../core/services/notification.service
 export class RegisterComponent {
   registerForm = this.fb.group({
     fullName: ['', Validators.required],
-    username: ['', Validators.required],
+    username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50), Validators.pattern(/^\w+$/)]],
     email:    ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
     tenantId: ['', Validators.required],
@@ -104,10 +107,10 @@ export class RegisterComponent {
   get f() { return this.registerForm.controls; }
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private notification: NotificationService,
-    private router: Router,
+    private readonly fb: FormBuilder,
+    private readonly authService: AuthService,
+    private readonly notification: NotificationService,
+    private readonly router: Router,
   ) {}
 
   onSubmit(): void {
@@ -129,7 +132,9 @@ export class RegisterComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.notification.error(err?.error?.detail ?? 'Registration failed. Please try again.');
+        const fieldErrors = err?.error?.errors as Record<string, string> | undefined;
+        const firstFieldError = fieldErrors ? Object.values(fieldErrors)[0] : null;
+        this.notification.error(firstFieldError ?? err?.error?.detail ?? 'Registration failed. Please try again.');
       },
     });
   }

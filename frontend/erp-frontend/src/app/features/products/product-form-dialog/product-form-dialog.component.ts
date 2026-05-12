@@ -1,10 +1,21 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
 import { Product, ProductService } from '../product.service';
 import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
+  standalone: true,
+  imports: [
+    CommonModule, ReactiveFormsModule,
+    MatDialogModule, MatFormFieldModule, MatInputModule,
+    MatSelectModule, MatButtonModule,
+  ],
   selector: 'app-product-form-dialog',
   template: `
     <h2 mat-dialog-title>{{ data.product ? 'Edit' : 'New' }} Product</h2>
@@ -66,8 +77,8 @@ export class ProductFormDialogComponent implements OnInit {
   form = this.fb.group({
     name:        ['', Validators.required],
     sku:         ['', Validators.required],
-    price:       [null, [Validators.required, Validators.min(0)]],
-    costPrice:   [null],
+    price:       [null as number | null, [Validators.required, Validators.min(0)]],
+    costPrice:   [null as number | null],
     category:    [''],
     description: [''],
     imageUrl:    [''],
@@ -78,9 +89,9 @@ export class ProductFormDialogComponent implements OnInit {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { product?: Product; tenantId: string },
     readonly dialogRef: MatDialogRef<ProductFormDialogComponent>,
-    private fb: FormBuilder,
-    private productService: ProductService,
-    private notification: NotificationService,
+    private readonly fb: FormBuilder,
+    private readonly productService: ProductService,
+    private readonly notification: NotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -90,14 +101,20 @@ export class ProductFormDialogComponent implements OnInit {
   save(): void {
     if (this.form.invalid) return;
     this.saving = true;
-    const payload: Product = { ...this.form.value as any, tenantId: this.data.tenantId };
+    const payload: Product = { ...(this.form.value as Product), tenantId: this.data.tenantId };
     const op = this.data.product
       ? this.productService.update(this.data.product.id!, payload)
       : this.productService.create(payload);
 
     op.subscribe({
-      next: () => { this.notification.success(`Product ${this.data.product ? 'updated' : 'created'}`); this.dialogRef.close(true); },
-      error: (err) => { this.saving = false; this.notification.error(err?.error?.detail ?? 'Operation failed'); },
+      next: () => {
+        this.notification.success(`Product ${this.data.product ? 'updated' : 'created'}`);
+        this.dialogRef.close(true);
+      },
+      error: (err: { error?: { detail?: string } }) => {
+        this.saving = false;
+        this.notification.error(err?.error?.detail ?? 'Operation failed');
+      },
     });
   }
 }

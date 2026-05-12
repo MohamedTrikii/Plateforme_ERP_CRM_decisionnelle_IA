@@ -19,7 +19,7 @@ function Write-Fail   ($msg) { Write-Host "  [ERR] $msg" -ForegroundColor Red }
 $root      = Split-Path -Parent $MyInvocation.MyCommand.Path
 $backend   = Join-Path $root "backend"
 $aiSvc     = Join-Path $root "ai-service"
-$frontend  = Join-Path $root "frontend\erp-frontend"
+$frontend  = Join-Path $root "frontend"
 
 # --- Verification des outils -------------------------------------------------
 Write-Title "Verification des prerequis"
@@ -75,6 +75,14 @@ Get-Content $envFile | Where-Object { $_ -match "^\s*[^#]" } | ForEach-Object {
     }
 }
 
+# Uniformiser les variables DB pour les services Spring lances localement
+if (-not $Env:POSTGRES_PORT) {
+    $Env:POSTGRES_PORT = "55432"
+}
+[System.Environment]::SetEnvironmentVariable("DB_USERNAME", $Env:POSTGRES_USER, "Process")
+[System.Environment]::SetEnvironmentVariable("DB_PASSWORD", $Env:POSTGRES_PASSWORD, "Process")
+[System.Environment]::SetEnvironmentVariable("DB_PORT", $Env:POSTGRES_PORT, "Process")
+
 # --- Helper : ouvrir un nouveau terminal PowerShell --------------------------
 function Start-Service {
     param (
@@ -91,7 +99,22 @@ function Start-Service {
     Start-Sleep -Seconds 2
 }
 
-# --- 1. Maven build (compile une seule fois) ----------------------------------
+# --- 1. PostgreSQL (Docker) --------------------------------------------------
+Write-Title "Demarrage PostgreSQL (Docker)"
+if (Get-Command docker -ErrorAction SilentlyContinue) {
+    try {
+        Push-Location $root
+        docker compose up -d postgres | Out-Host
+        Pop-Location
+        Write-Ok "PostgreSQL Docker lance (port hote: $Env:POSTGRES_PORT)."
+    } catch {
+        Write-Warn "Impossible de demarrer PostgreSQL via Docker. Verifiez Docker Desktop puis relancez."
+    }
+} else {
+    Write-Warn "Docker introuvable. PostgreSQL doit etre deja disponible sur localhost:$Env:DB_PORT."
+}
+
+# --- 2. Maven build (compile une seule fois) ----------------------------------
 Write-Title "Compilation Maven (backend)"
 Push-Location $backend
 try {
@@ -104,26 +127,26 @@ try {
     Pop-Location
 }
 
-# --- 2. auth-service ----------------------------------------------------------
+# --- 3. auth-service ----------------------------------------------------------
 Write-Title "Lancement des microservices Spring Boot"
 Start-Service `
     -Name     "auth-service (8081)" `
     -WorkDir  (Join-Path $backend "auth-service") `
     -Command  "mvn spring-boot:run"
 
-# --- 3. core-service ----------------------------------------------------------
+# --- 4. core-service ----------------------------------------------------------
 Start-Service `
     -Name     "core-service (8082)" `
     -WorkDir  (Join-Path $backend "core-service") `
     -Command  "mvn spring-boot:run"
 
-# --- 4. api-gateway -----------------------------------------------------------
+# --- 5. api-gateway -----------------------------------------------------------
 Start-Service `
     -Name     "api-gateway (8083)" `
     -WorkDir  (Join-Path $backend "api-gateway") `
     -Command  "mvn spring-boot:run"
 
-# --- 5. ai-service (Python) ---------------------------------------------------
+# --- 6. ai-service (Python) ---------------------------------------------------
 Write-Title "Lancement du service IA (Python)"
 
 # Creer / activer un virtualenv si necessaire
@@ -144,7 +167,7 @@ Start-Service `
     -WorkDir  $aiSvc `
     -Command  "& '$uvicorn' main:app --host 0.0.0.0 --port 8000 --reload"
 
-# --- 6. Frontend Angular ------------------------------------------------------
+# --- 7. Frontend Angular ------------------------------------------------------
 Write-Title "Lancement du frontend Angular (4200)"
 
 if (-not (Test-Path (Join-Path $frontend "node_modules"))) {

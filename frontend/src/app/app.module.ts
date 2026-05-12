@@ -22,6 +22,10 @@ import { errorInterceptor } from './core/interceptors/error.interceptor';
  * Protected routes use authGuard; admin-only routes also use adminGuard.
  */
 const routes: Routes = [
+  // Aliases for direct links/bookmarks
+  { path: 'login', redirectTo: 'auth/login', pathMatch: 'full' },
+  { path: 'register', redirectTo: 'auth/register', pathMatch: 'full' },
+
   // Auth routes (public)
   {
     path: 'auth',

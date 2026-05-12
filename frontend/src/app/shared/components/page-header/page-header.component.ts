@@ -1,10 +1,13 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 /**
  * PageHeaderComponent – consistent page title + action area across all feature pages.
  */
 @Component({
   selector: 'app-page-header',
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <div class="page-header">
       <div class="page-header-left">

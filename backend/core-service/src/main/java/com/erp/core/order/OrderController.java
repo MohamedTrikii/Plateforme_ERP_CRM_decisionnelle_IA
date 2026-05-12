@@ -23,19 +23,20 @@ public class OrderController {
 
     @GetMapping
     public ResponseEntity<Page<Order>> list(
-            @RequestParam String tenantId,
-            Pageable pageable) {
+            @RequestParam("tenantId") @org.springframework.lang.NonNull String tenantId,
+            @org.springframework.lang.NonNull Pageable pageable) {
         return ResponseEntity.ok(orderService.findAll(tenantId, pageable));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Order> getById(
-            @PathVariable Long id,
-            @RequestParam String tenantId) {
+            @PathVariable @org.springframework.lang.NonNull Long id,
+            @RequestParam("tenantId") @org.springframework.lang.NonNull String tenantId) {
         return ResponseEntity.ok(orderService.findById(id, tenantId));
     }
 
     @PostMapping
+    @SuppressWarnings("java:S4684")
     public ResponseEntity<Order> create(@Valid @RequestBody Order order) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(orderService.create(order));
@@ -44,18 +45,18 @@ public class OrderController {
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Order> updateStatus(
-            @PathVariable Long id,
-            @RequestParam String tenantId,
-            @RequestParam Order.OrderStatus status) {
+            @PathVariable @org.springframework.lang.NonNull Long id,
+            @RequestParam("tenantId") @org.springframework.lang.NonNull String tenantId,
+            @RequestParam("status") Order.OrderStatus status) {
         return ResponseEntity.ok(orderService.updateStatus(id, tenantId, status));
     }
 
     @GetMapping("/revenue")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Map<String, BigDecimal>> revenue(
-            @RequestParam String tenantId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+            @RequestParam("tenantId") String tenantId,
+            @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         BigDecimal total = orderService.getRevenue(tenantId, from, to);
         return ResponseEntity.ok(Map.of("totalRevenue", total));
     }

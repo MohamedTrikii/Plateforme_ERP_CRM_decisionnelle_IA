@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+    private static final String TIMESTAMP_PROPERTY = "timestamp";
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ProblemDetail> handleValidation(MethodArgumentNotValidException ex) {
@@ -35,7 +36,7 @@ public class GlobalExceptionHandler {
         pd.setTitle("Validation Failed");
         pd.setDetail("One or more fields are invalid");
         pd.setProperty("errors", fieldErrors);
-        pd.setProperty("timestamp", Instant.now().toString());
+        pd.setProperty(TIMESTAMP_PROPERTY, Instant.now().toString());
         return ResponseEntity.badRequest().body(pd);
     }
 
@@ -46,7 +47,7 @@ public class GlobalExceptionHandler {
         pd.setTitle("Authentication Failed");
         pd.setDetail("Invalid username or password");
         pd.setType(URI.create("https://erp.platform/errors/unauthorized"));
-        pd.setProperty("timestamp", Instant.now().toString());
+        pd.setProperty(TIMESTAMP_PROPERTY, Instant.now().toString());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(pd);
     }
 
@@ -57,7 +58,7 @@ public class GlobalExceptionHandler {
         pd.setTitle("Account Disabled");
         pd.setDetail("Your account has been deactivated. Please contact your administrator.");
         pd.setType(URI.create("https://erp.platform/errors/forbidden"));
-        pd.setProperty("timestamp", Instant.now().toString());
+        pd.setProperty(TIMESTAMP_PROPERTY, Instant.now().toString());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(pd);
     }
 
@@ -68,7 +69,7 @@ public class GlobalExceptionHandler {
         pd.setTitle("Registration Failed");
         pd.setDetail(ex.getMessage());
         pd.setType(URI.create("https://erp.platform/errors/conflict"));
-        pd.setProperty("timestamp", Instant.now().toString());
+        pd.setProperty(TIMESTAMP_PROPERTY, Instant.now().toString());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(pd);
     }
 
@@ -78,7 +79,7 @@ public class GlobalExceptionHandler {
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
         pd.setTitle("Internal Server Error");
         pd.setDetail("An unexpected error occurred");
-        pd.setProperty("timestamp", Instant.now().toString());
+        pd.setProperty(TIMESTAMP_PROPERTY, Instant.now().toString());
         return ResponseEntity.internalServerError().body(pd);
     }
 }

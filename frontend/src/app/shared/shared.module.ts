@@ -48,8 +48,11 @@ const SHARED_COMPONENTS = [
 ];
 
 @NgModule({
-  declarations: [...SHARED_COMPONENTS],
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, ...MATERIAL_MODULES],
+  imports: [
+    CommonModule, RouterModule, ReactiveFormsModule, FormsModule,
+    ...MATERIAL_MODULES,
+    ...SHARED_COMPONENTS,  // Import standalone components
+  ],
   exports: [
     CommonModule, RouterModule, ReactiveFormsModule, FormsModule,
     ...MATERIAL_MODULES,

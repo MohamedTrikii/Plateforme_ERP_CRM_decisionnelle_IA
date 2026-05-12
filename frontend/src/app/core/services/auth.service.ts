@@ -19,10 +19,10 @@ export class AuthService {
   private readonly REFRESH_KEY = 'erp_refresh_token';
   private readonly USER_KEY    = 'erp_current_user';
 
-  private currentUserSubject = new BehaviorSubject<User | null>(this.loadStoredUser());
+  private readonly currentUserSubject = new BehaviorSubject<User | null>(this.loadStoredUser());
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private readonly http: HttpClient, private readonly router: Router) {}
 
   // ── Login ─────────────────────────────────────────────────────────────────
 

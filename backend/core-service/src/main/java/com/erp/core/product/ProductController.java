@@ -18,8 +18,8 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<Page<Product>> list(
-            @RequestParam String tenantId,
-            @RequestParam(required = false) String search,
+            @RequestParam("tenantId") String tenantId,
+            @RequestParam(value = "search", required = false) String search,
             Pageable pageable) {
         Page<Product> result = (search != null && !search.isBlank())
                 ? productService.search(tenantId, search, pageable)
@@ -30,7 +30,7 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<Product> getById(
             @PathVariable Long id,
-            @RequestParam String tenantId) {
+            @RequestParam("tenantId") String tenantId) {
         return ResponseEntity.ok(productService.findById(id, tenantId));
     }
 
@@ -53,13 +53,13 @@ public class ProductController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
-            @RequestParam String tenantId) {
+            @RequestParam("tenantId") String tenantId) {
         productService.delete(id, tenantId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Long> count(@RequestParam String tenantId) {
+    public ResponseEntity<Long> count(@RequestParam("tenantId") String tenantId) {
         return ResponseEntity.ok(productService.count(tenantId));
     }
 }

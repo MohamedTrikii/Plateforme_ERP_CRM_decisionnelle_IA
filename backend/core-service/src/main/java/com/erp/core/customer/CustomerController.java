@@ -25,8 +25,8 @@ public class CustomerController {
 
     @GetMapping
     public ResponseEntity<Page<Customer>> list(
-            @RequestParam String tenantId,
-            @RequestParam(required = false) String search,
+            @RequestParam("tenantId") String tenantId,
+            @RequestParam(value = "search", required = false) String search,
             Pageable pageable) {
         Page<Customer> result = (search != null && !search.isBlank())
                 ? customerService.search(tenantId, search, pageable)
@@ -37,7 +37,7 @@ public class CustomerController {
     @GetMapping("/{id}")
     public ResponseEntity<Customer> getById(
             @PathVariable Long id,
-            @RequestParam String tenantId) {
+            @RequestParam("tenantId") String tenantId) {
         return ResponseEntity.ok(customerService.findById(id, tenantId));
     }
 
@@ -59,13 +59,13 @@ public class CustomerController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
-            @RequestParam String tenantId) {
+            @RequestParam("tenantId") String tenantId) {
         customerService.delete(id, tenantId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Long> count(@RequestParam String tenantId) {
+    public ResponseEntity<Long> count(@RequestParam("tenantId") String tenantId) {
         return ResponseEntity.ok(customerService.count(tenantId));
     }
 }

@@ -25,6 +25,8 @@ import java.util.Map;
 @SuppressWarnings("null")
 public class UserManagementController {
 
+    private static final String USER_NOT_FOUND = "User not found: ";
+
     private final UserRepository userRepository;
 
     /** List all users in a tenant with pagination */
@@ -42,7 +44,7 @@ public class UserManagementController {
     @GetMapping("/{id}")
     public ResponseEntity<User> getById(@PathVariable Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found: " + id));
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND + id));
         return ResponseEntity.ok(user);
     }
 
@@ -52,7 +54,7 @@ public class UserManagementController {
             @PathVariable Long id,
             @RequestBody Map<String, String> body) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found: " + id));
+            .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND + id));
         user.setRole(Role.valueOf(body.get("role")));
         return ResponseEntity.ok(userRepository.save(user));
     }
@@ -61,7 +63,7 @@ public class UserManagementController {
     @PatchMapping("/{id}/toggle-active")
     public ResponseEntity<User> toggleActive(@PathVariable Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found: " + id));
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND + id));
         user.setEnabled(!user.isEnabled());
         return ResponseEntity.ok(userRepository.save(user));
     }

@@ -1,116 +1,97 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { MatListModule } from '@angular/material/list';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../core/services/auth.service';
 import { ConfigService } from '../../core/services/config.service';
 
-interface NavItem {
-  label: string;
-  icon: string;
-  route: string;
-  roles?: Array<'ADMIN' | 'MANAGER' | 'USER'>;
-}
-
 @Component({
+  standalone: true,
+  imports: [CommonModule, RouterModule, MatListModule, MatDividerModule, MatIconModule],
   selector: 'app-sidebar',
   template: `
-    <div class="sidebar-wrapper">
-
-      <!-- Logo section -->
-      <div class="sidebar-logo">
-        <img [src]="logoUrl" alt="Logo" class="logo-img" onerror="this.style.display='none'">
-        <span class="logo-text">{{ companyName }}</span>
+    <div class="sidebar-container">
+      <div class="tenant-block">
+        <div class="tenant-name">{{ tenantName }}</div>
+        <div class="tenant-id">{{ tenantId }}</div>
       </div>
 
       <mat-divider></mat-divider>
 
-      <!-- Navigation list -->
-      <mat-nav-list class="nav-list">
-        <ng-container *ngFor="let item of visibleNavItems">
-          <a mat-list-item
-             [routerLink]="item.route"
-             routerLinkActive="active-link"
-             [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
-             (click)="closeSidenav.emit()">
-            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-            <span matListItemTitle>{{ item.label }}</span>
-          </a>
-        </ng-container>
+      <mat-nav-list>
+        <a mat-list-item routerLink="/dashboard" routerLinkActive="active-link" (click)="onNavigate()">
+          <mat-icon matListItemIcon>dashboard</mat-icon>
+          <span matListItemTitle>Dashboard</span>
+        </a>
+        <a mat-list-item routerLink="/customers" routerLinkActive="active-link" (click)="onNavigate()">
+          <mat-icon matListItemIcon>people</mat-icon>
+          <span matListItemTitle>Customers</span>
+        </a>
+        <a mat-list-item routerLink="/products" routerLinkActive="active-link" (click)="onNavigate()">
+          <mat-icon matListItemIcon>inventory_2</mat-icon>
+          <span matListItemTitle>Products</span>
+        </a>
+        <a mat-list-item routerLink="/orders" routerLinkActive="active-link" (click)="onNavigate()">
+          <mat-icon matListItemIcon>receipt_long</mat-icon>
+          <span matListItemTitle>Orders</span>
+        </a>
+        <a mat-list-item routerLink="/reports" routerLinkActive="active-link" (click)="onNavigate()">
+          <mat-icon matListItemIcon>analytics</mat-icon>
+          <span matListItemTitle>Reports</span>
+        </a>
       </mat-nav-list>
-
-      <div class="sidebar-footer">
-        <mat-divider></mat-divider>
-        <div class="tenant-badge">
-          <mat-icon>business</mat-icon>
-          <span>{{ tenantId }}</span>
-        </div>
-      </div>
     </div>
   `,
   styles: [`
-    .sidebar-wrapper { display: flex; flex-direction: column; height: 100%; }
-    .sidebar-logo {
-      display: flex; align-items: center; gap: 10px; padding: 20px 16px 16px;
-      .logo-img  { height: 36px; max-width: 36px; object-fit: contain; }
-      .logo-text { font-weight: 700; font-size: 17px; color: var(--primary-color); }
+    .sidebar-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface-color, #fff);
     }
-    .nav-list { flex: 1; padding: 8px 0; }
-    a[mat-list-item] {
-      border-radius: 8px; margin: 2px 8px; height: 44px;
-      color: var(--text-secondary); font-weight: 500; font-size: 14px;
-      &.active-link {
-        background: #e8eaf6; color: var(--primary-color);
-        mat-icon { color: var(--primary-color); }
-      }
-      &:hover:not(.active-link) { background: #f5f5f5; color: var(--text-primary); }
+
+    .tenant-block {
+      padding: 16px;
+      line-height: 1.2;
     }
-    .sidebar-footer { padding: 8px 0; }
-    .tenant-badge {
-      display: flex; align-items: center; gap: 8px; padding: 12px 16px;
-      font-size: 12px; color: var(--text-secondary);
-      mat-icon { font-size: 16px; width: 16px; height: 16px; }
+
+    .tenant-name {
+      font-weight: 600;
+      font-size: 0.95rem;
     }
-  `]
+
+    .tenant-id {
+      margin-top: 4px;
+      color: var(--text-secondary, #666);
+      font-size: 0.8rem;
+      word-break: break-all;
+    }
+
+    .active-link {
+      background: rgba(63, 81, 181, 0.12);
+      border-left: 3px solid #3f51b5;
+    }
+  `],
 })
 export class SidebarComponent implements OnInit {
-  @Output() closeSidenav = new EventEmitter<void>();
+  @Output() navigate = new EventEmitter<void>();
 
-  companyName = 'ERP Platform';
-  logoUrl     = 'assets/images/default-logo.svg';
-  tenantId    = '';
-
-  private readonly ALL_NAV_ITEMS: NavItem[] = [
-    { label: 'Dashboard',  icon: 'dashboard',        route: '/dashboard' },
-    { label: 'Customers',  icon: 'people',            route: '/customers' },
-    { label: 'Products',   icon: 'inventory_2',       route: '/products' },
-    { label: 'Orders',     icon: 'receipt_long',      route: '/orders' },
-    { label: 'Stock',      icon: 'warehouse',         route: '/stock' },
-    { label: 'Settings',   icon: 'settings',          route: '/settings', roles: ['ADMIN'] },
-    { label: 'Audit Logs', icon: 'history',           route: '/audit',    roles: ['ADMIN', 'MANAGER'] },
-    { label: 'Users',      icon: 'manage_accounts',   route: '/users',    roles: ['ADMIN'] },
-  ];
-
-  visibleNavItems: NavItem[] = [];
+  tenantName = 'Tenant';
+  tenantId = '';
 
   constructor(
-    private authService: AuthService,
-    private configService: ConfigService,
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
   ) {}
 
   ngOnInit(): void {
-    const user = this.authService.getCurrentUser();
-    this.tenantId    = user?.tenantId ?? '';
-    this.companyName = this.configService.getCompanyName();
-    this.logoUrl     = this.configService.getLogoUrl();
+    this.tenantId = this.authService.getTenantId() ?? '';
+    this.tenantName = this.configService.getTenantName() || 'Tenant';
+  }
 
-    // Filter nav items by role
-    this.visibleNavItems = this.ALL_NAV_ITEMS.filter(item => {
-      if (!item.roles) return true;
-      return item.roles.includes(user?.role ?? 'USER');
-    });
-
-    // Re-apply when config loads
-    this.configService.config$.subscribe(() => {
-      this.companyName = this.configService.getCompanyName();
-      this.logoUrl     = this.configService.getLogoUrl();
-    });
+  onNavigate(): void {
+    this.navigate.emit();
   }
 }
