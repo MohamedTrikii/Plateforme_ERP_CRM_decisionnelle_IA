@@ -31,15 +31,20 @@ if ($jdk23Path) {
     $Env:Path = "$($jdk23Path.DirectoryName);$Env:Path"
     Write-Ok "Utilisation de Java trouvé dans : $($jdk23Path.FullName)"
 }
-$mvnCmd = "C:\PFA\tools\apache-maven-3.9.9\bin\mvn.cmd"
 
-# Auto-detect Maven if missing
-if (-not (Get-Command mvn -ErrorAction SilentlyContinue)) {
-    $localMvn = Get-ChildItem "c:\PFA\tools\apache-maven-*\bin\mvn.cmd" -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($localMvn) {
-        $Env:Path = "$($localMvn.DirectoryName);$Env:Path"
-        Write-Ok "Utilisation automatique de Maven trouve dans : $($localMvn.FullName)"
-    }
+# Prefer system Maven if available; otherwise use bundled Maven
+$mvnCmd = "mvn"
+$localMvn = Join-Path $root "tools\apache-maven-3.9.9\bin\mvn.cmd"
+if (Get-Command mvn -ErrorAction SilentlyContinue) {
+    $version = (& mvn -version 2>&1 | Select-Object -First 1)
+    Write-Ok "Utilisation de Maven system trouve : $version"
+} elseif (Test-Path $localMvn) {
+    $Env:Path = "$(Split-Path $localMvn);$Env:Path"
+    $mvnCmd = $localMvn
+    Write-Ok "Utilisation de Maven locale trouve dans : $localMvn"
+} else {
+    Write-Fail "Maven introuvable. Installez Maven ou ajoutez-le au PATH."
+    exit 1
 }
 
 foreach ($tool in @("java","mvn","node","npm","python")) {
