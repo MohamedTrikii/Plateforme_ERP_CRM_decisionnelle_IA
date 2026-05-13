@@ -24,7 +24,9 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     Optional<Customer> findByIdAndTenantId(Long id, String tenantId);
 
-    boolean existsByEmailAndTenantId(String email, String tenantId);
+    boolean existsByEmailIgnoreCaseAndTenantId(String email, String tenantId);
+
+    boolean existsByEmailIgnoreCaseAndTenantIdAndIdNot(String email, String tenantId, Long id);
 
     long countByTenantId(String tenantId);
 }

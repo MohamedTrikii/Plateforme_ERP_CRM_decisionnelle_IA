@@ -24,7 +24,7 @@ if ($env:POSTGRES_PASSWORD) {
     $env:DB_PASSWORD = $env:POSTGRES_PASSWORD
 }
 if (-not $env:DB_PORT) {
-    $env:DB_PORT = '55432'
+    $env:DB_PORT = '5432'
 }
 
 Set-Location $ServiceDir

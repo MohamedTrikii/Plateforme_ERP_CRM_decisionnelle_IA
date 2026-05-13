@@ -36,7 +36,7 @@ public class CustomerController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Customer> getById(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @RequestParam("tenantId") String tenantId) {
         return ResponseEntity.ok(customerService.findById(id, tenantId));
     }
@@ -50,7 +50,7 @@ public class CustomerController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Customer> update(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody Customer customer) {
         return ResponseEntity.ok(customerService.update(id, customer));
     }
@@ -58,7 +58,7 @@ public class CustomerController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> delete(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @RequestParam("tenantId") String tenantId) {
         customerService.delete(id, tenantId);
         return ResponseEntity.noContent().build();

@@ -19,6 +19,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Page<Order> findByCustomerIdAndTenantId(Long customerId, String tenantId, Pageable pageable);
 
+       long countByCustomerIdAndTenantId(Long customerId, String tenantId);
+
     Optional<Order> findByIdAndTenantId(Long id, String tenantId);
 
     Optional<Order> findByOrderNumberAndTenantId(String orderNumber, String tenantId);

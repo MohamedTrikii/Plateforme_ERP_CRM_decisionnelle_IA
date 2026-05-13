@@ -24,15 +24,14 @@ $frontend  = Join-Path $root "frontend"
 # --- Verification des outils -------------------------------------------------
 Write-Title "Verification des prerequis"
 
-# Auto-detect modern Java if default is too old (Java 8) or missing
-if ((& java -version 2>&1 | Select-String "1.8.0") -or -not (Get-Command java -ErrorAction SilentlyContinue)) {
-    $modernJava = Get-ChildItem "C:\Program Files\Java\jdk-23\bin\java.exe", "C:\Program Files\Java\jdk-20\bin\java.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($modernJava) {
-        $Env:JAVA_HOME = $modernJava.Directory.Parent.FullName
-        $Env:Path = "$($modernJava.DirectoryName);$Env:Path"
-        Write-Ok "Utilisation automatique de modern Java trouve dans : $($modernJava.FullName)"
-    }
+# Force JDK-23 for Maven 3.9.9 compatibility
+$jdk23Path = Get-ChildItem "C:\Program Files\Java\jdk-23\bin\java.exe", "C:\Program Files\Java\jdk-21\bin\java.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($jdk23Path) {
+    $Env:JAVA_HOME = $jdk23Path.Directory.Parent.FullName
+    $Env:Path = "$($jdk23Path.DirectoryName);$Env:Path"
+    Write-Ok "Utilisation de Java trouvé dans : $($jdk23Path.FullName)"
 }
+$mvnCmd = "C:\PFA\tools\apache-maven-3.9.9\bin\mvn.cmd"
 
 # Auto-detect Maven if missing
 if (-not (Get-Command mvn -ErrorAction SilentlyContinue)) {
@@ -77,7 +76,7 @@ Get-Content $envFile | Where-Object { $_ -match "^\s*[^#]" } | ForEach-Object {
 
 # Uniformiser les variables DB pour les services Spring lances localement
 if (-not $Env:POSTGRES_PORT) {
-    $Env:POSTGRES_PORT = "55432"
+    $Env:POSTGRES_PORT = "5432"
 }
 [System.Environment]::SetEnvironmentVariable("DB_USERNAME", $Env:POSTGRES_USER, "Process")
 [System.Environment]::SetEnvironmentVariable("DB_PASSWORD", $Env:POSTGRES_PASSWORD, "Process")
@@ -118,7 +117,7 @@ if (Get-Command docker -ErrorAction SilentlyContinue) {
 Write-Title "Compilation Maven (backend)"
 Push-Location $backend
 try {
-    mvn clean package -DskipTests -q
+    & $mvnCmd clean package -DskipTests -q
     Write-Ok "Build Maven termine."
 } catch {
     Write-Fail "Build Maven echoue - verifiez les erreurs ci-dessus."
@@ -132,19 +131,19 @@ Write-Title "Lancement des microservices Spring Boot"
 Start-Service `
     -Name     "auth-service (8081)" `
     -WorkDir  (Join-Path $backend "auth-service") `
-    -Command  "mvn spring-boot:run"
+    -Command  "& '$mvnCmd' spring-boot:run"
 
 # --- 4. core-service ----------------------------------------------------------
 Start-Service `
     -Name     "core-service (8082)" `
     -WorkDir  (Join-Path $backend "core-service") `
-    -Command  "mvn spring-boot:run"
+    -Command  "& '$mvnCmd' spring-boot:run"
 
 # --- 5. api-gateway -----------------------------------------------------------
 Start-Service `
     -Name     "api-gateway (8083)" `
     -WorkDir  (Join-Path $backend "api-gateway") `
-    -Command  "mvn spring-boot:run"
+    -Command  "& '$mvnCmd' spring-boot:run"
 
 # --- 6. ai-service (Python) ---------------------------------------------------
 Write-Title "Lancement du service IA (Python)"
@@ -180,7 +179,7 @@ if (-not (Test-Path (Join-Path $frontend "node_modules"))) {
 Start-Service `
     -Name     "frontend Angular (4200)" `
     -WorkDir  $frontend `
-    -Command  "npm start"
+    -Command  "npm start -- --host 0.0.0.0 --port 4200"
 
 # --- Resume ------------------------------------------------------------------
 Write-Title "Tous les services sont en cours de demarrage"

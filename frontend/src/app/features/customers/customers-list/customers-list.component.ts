@@ -66,7 +66,11 @@ import { NotificationService } from '../../../core/services/notification.service
                 <button mat-icon-button (click)="openForm(c)" matTooltip="Edit">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" (click)="delete(c)" matTooltip="Delete">
+                <button mat-icon-button
+                        color="warn"
+                        [disabled]="!canDeleteCustomers()"
+                        (click)="delete(c)"
+                        [matTooltip]="canDeleteCustomers() ? 'Delete' : 'Delete requires ADMIN or MANAGER role'">
                   <mat-icon>delete</mat-icon>
                 </button>
               </td>
@@ -151,6 +155,10 @@ export class CustomersListComponent implements OnInit {
   }
 
   delete(customer: Customer): void {
+    if (!this.canDeleteCustomers()) {
+      this.notification.error('You do not have permission to delete customers');
+      return;
+    }
     const ref = this.dialog.open(ConfirmDialogComponent, {
       data: { title: 'Delete Customer', message: `Delete "${customer.name}"? This cannot be undone.`, danger: true, confirmLabel: 'Delete' },
     });
@@ -161,5 +169,9 @@ export class CustomersListComponent implements OnInit {
         error: () => this.notification.error('Failed to delete customer'),
       });
     });
+  }
+
+  canDeleteCustomers(): boolean {
+    return this.authService.isManagerOrAbove();
   }
 }

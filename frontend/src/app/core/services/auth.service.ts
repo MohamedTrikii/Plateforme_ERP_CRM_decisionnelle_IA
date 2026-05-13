@@ -67,11 +67,11 @@ export class AuthService {
   }
 
   isAdmin(): boolean {
-    return this.getCurrentUser()?.role === 'ADMIN';
+    return this.normalizeRole(this.getCurrentUser()?.role) === 'ADMIN';
   }
 
   isManagerOrAbove(): boolean {
-    const role = this.getCurrentUser()?.role;
+    const role = this.normalizeRole(this.getCurrentUser()?.role);
     return role === 'ADMIN' || role === 'MANAGER';
   }
 
@@ -91,7 +91,7 @@ export class AuthService {
       username: response.username,
       email: '',
       fullName: response.username,
-      role: response.role.replace('ROLE_', '') as User['role'],
+      role: this.normalizeRole(response.role),
       tenantId: response.tenantId,
       enabled: true,
     };
@@ -102,10 +102,23 @@ export class AuthService {
   private loadStoredUser(): User | null {
     try {
       const raw = localStorage.getItem(this.USER_KEY);
-      return raw ? JSON.parse(raw) : null;
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as User;
+      return {
+        ...parsed,
+        role: this.normalizeRole(parsed.role),
+      };
     } catch {
       return null;
     }
+  }
+
+  private normalizeRole(role?: string): User['role'] {
+    const normalized = (role ?? '').toUpperCase().replace('ROLE_', '');
+    if (normalized === 'ADMIN' || normalized === 'MANAGER' || normalized === 'USER') {
+      return normalized;
+    }
+    return 'USER';
   }
 
   private isTokenExpired(token: string): boolean {

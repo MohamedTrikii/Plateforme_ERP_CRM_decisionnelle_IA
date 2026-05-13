@@ -10,6 +10,11 @@ $ErrorActionPreference = "Stop"
 $root     = Split-Path -Parent $MyInvocation.MyCommand.Path
 $frontend = Join-Path $root "frontend"
 
+$npmCmd = (Get-Command npm -ErrorAction SilentlyContinue).Source
+if (-not $npmCmd) {
+    $npmCmd = "npm"
+}
+
 Write-Host "`n==> Frontend Angular" -ForegroundColor Cyan
 
 if (-not (Test-Path (Join-Path $frontend "node_modules"))) {
@@ -21,4 +26,4 @@ if (-not (Test-Path (Join-Path $frontend "node_modules"))) {
 
 Write-Host "  Démarrage sur http://localhost:4200`n" -ForegroundColor Green
 Set-Location $frontend
-npm start
+& $npmCmd start -- --host 0.0.0.0 --port 4200

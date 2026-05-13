@@ -1,6 +1,7 @@
 package com.erp.core.customer;
 
 import com.erp.core.audit.AuditService;
+import com.erp.core.order.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final OrderRepository    orderRepository;
     private final AuditService       auditService;
 
     @Transactional(readOnly = true)
@@ -39,7 +41,8 @@ public class CustomerService {
 
     @Transactional
     public Customer create(Customer customer) {
-        if (customerRepository.existsByEmailAndTenantId(
+        if (customer.getEmail() != null && !customer.getEmail().isBlank()
+                && customerRepository.existsByEmailIgnoreCaseAndTenantId(
                 customer.getEmail(), customer.getTenantId())) {
             throw new IllegalArgumentException("Email already exists in this tenant");
         }
@@ -54,6 +57,12 @@ public class CustomerService {
     public Customer update(Long id, Customer incoming) {
         Customer existing = findById(id, incoming.getTenantId());
         Customer oldSnapshot = copyCustomer(existing);
+
+        if (incoming.getEmail() != null && !incoming.getEmail().isBlank()
+                && customerRepository.existsByEmailIgnoreCaseAndTenantIdAndIdNot(
+                incoming.getEmail(), incoming.getTenantId(), id)) {
+            throw new IllegalArgumentException("Email already exists in this tenant");
+        }
 
         existing.setName(incoming.getName());
         existing.setEmail(incoming.getEmail());
@@ -71,6 +80,11 @@ public class CustomerService {
     @Transactional
     public void delete(Long id, String tenantId) {
         Customer existing = findById(id, tenantId);
+        long linkedOrders = orderRepository.countByCustomerIdAndTenantId(id, tenantId);
+        if (linkedOrders > 0) {
+            throw new IllegalArgumentException(
+                    "Cannot delete customer because " + linkedOrders + " order(s) still reference it");
+        }
         customerRepository.delete(existing);
         auditService.log("Customer", String.valueOf(id),
                 "DELETE", existing, null, tenantId);

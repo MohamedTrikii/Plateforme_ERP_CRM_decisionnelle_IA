@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -108,7 +110,19 @@ public class JwtTokenProvider {
      * The secret must be at least 256 bits (32 bytes) for HS256.
      */
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-        return Keys.hmacShaKeyFor(keyBytes);
+        try {
+            byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+            return Keys.hmacShaKeyFor(keyBytes);
+        } catch (Exception ignored) {
+            byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+            if (keyBytes.length < 32) {
+                try {
+                    keyBytes = MessageDigest.getInstance("SHA-256").digest(keyBytes);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Unable to derive JWT signing key", e);
+                }
+            }
+            return Keys.hmacShaKeyFor(keyBytes);
+        }
     }
 }

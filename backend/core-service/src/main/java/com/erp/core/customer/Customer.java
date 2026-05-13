@@ -30,7 +30,7 @@ public class Customer extends Auditable {
     private String name;
 
     @Email
-    @Column(unique = true, length = 150)
+    @Column(length = 150)
     private String email;
 
     @Column(length = 30)

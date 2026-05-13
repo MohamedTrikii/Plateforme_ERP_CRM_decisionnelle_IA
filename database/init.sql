@@ -39,7 +39,7 @@ INSERT INTO users (username, email, password, full_name, role, tenant_id)
 VALUES (
     'admin',
     'admin@erp.local',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdbomI9ER.cJ4lS',
+    '$2a$12$VshyU9ErAapmkHu85x7lUeJ9EdiIM7Gvn66Ae4lqiCYpfh.71EL46',
     'System Administrator',
     'ADMIN',
     'default'

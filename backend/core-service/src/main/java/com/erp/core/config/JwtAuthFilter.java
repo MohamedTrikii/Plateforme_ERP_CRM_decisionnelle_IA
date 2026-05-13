@@ -19,6 +19,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.List;
 
 /**
@@ -81,7 +83,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-        return Keys.hmacShaKeyFor(keyBytes);
+        try {
+            byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+            return Keys.hmacShaKeyFor(keyBytes);
+        } catch (Exception ignored) {
+            byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+            if (keyBytes.length < 32) {
+                try {
+                    keyBytes = MessageDigest.getInstance("SHA-256").digest(keyBytes);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Unable to derive JWT signing key", e);
+                }
+            }
+            return Keys.hmacShaKeyFor(keyBytes);
+        }
     }
 }

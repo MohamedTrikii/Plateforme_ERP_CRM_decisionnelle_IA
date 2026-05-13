@@ -10,6 +10,13 @@ $ErrorActionPreference = "Stop"
 $root    = Split-Path -Parent $MyInvocation.MyCommand.Path
 $backend = Join-Path $root "backend"
 $aiSvc   = Join-Path $root "ai-service"
+$jdk23   = "C:\Program Files\Java\jdk-23"
+$mvnCmd  = "C:\PFA\tools\apache-maven-3.9.9\bin\mvn.cmd"
+
+if (Test-Path (Join-Path $jdk23 "bin\java.exe")) {
+    $Env:JAVA_HOME = $jdk23
+    $Env:Path = "$(Join-Path $jdk23 'bin');$Env:Path"
+}
 
 function Write-Title ($msg) { Write-Host "`n==> $msg" -ForegroundColor Cyan }
 function Write-Ok    ($msg) { Write-Host "  [OK]  $msg" -ForegroundColor Green }
@@ -39,10 +46,27 @@ try {
     Write-Host "  PostgreSQL inaccessible – vérifiez qu'il tourne sur le port 5432." -ForegroundColor Yellow
 }
 
+function Ensure-DatabaseExists {
+    param(
+        [string] $DatabaseName
+    )
+
+    $existsQuery = "SELECT 1 FROM pg_database WHERE datname = '$DatabaseName';"
+    $exists = & psql -U $env:POSTGRES_USER -d postgres -tAc $existsQuery 2>$null
+
+    if (-not $exists) {
+        Write-Ok "Création de la base $DatabaseName..."
+        & psql -U $env:POSTGRES_USER -d postgres -c "CREATE DATABASE $DatabaseName;" | Out-Host
+    }
+}
+
+Ensure-DatabaseExists -DatabaseName "erp_auth"
+Ensure-DatabaseExists -DatabaseName "erp_core"
+
 # ─── Build Maven ─────────────────────────────────────────────────────────────
 Write-Title "Compilation Maven"
 Push-Location $backend
-mvn clean package -DskipTests -q
+& $mvnCmd clean package -DskipTests -q
 Write-Ok "Build terminé."
 Pop-Location
 
@@ -58,7 +82,7 @@ foreach ($svc in @(
     Write-Ok "Démarrage $($svc.Name)…"
     Start-Process powershell.exe `
         -ArgumentList "-NoExit", "-Command",
-        "cd '$dir'; `$Host.UI.RawUI.WindowTitle = '$($svc.Name)'; mvn spring-boot:run"
+        "`$Env:JAVA_HOME = '$jdk23'; `$Env:Path = '$(Join-Path $jdk23 'bin');' + `$Env:Path; cd '$dir'; `$Host.UI.RawUI.WindowTitle = '$($svc.Name)'; & '$mvnCmd' spring-boot:run"
     Start-Sleep -Seconds 1
 }
 
