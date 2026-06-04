@@ -34,7 +34,10 @@ import { NotificationService } from '../../../core/services/notification.service
         </div>
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Category</mat-label>
-          <input matInput formControlName="category">
+          <mat-select formControlName="category">
+            <mat-option [value]="''">None</mat-option>
+            <mat-option *ngFor="let category of categories" [value]="category">{{ category }}</mat-option>
+          </mat-select>
         </mat-form-field>
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Description</mat-label>
@@ -63,6 +66,9 @@ import { NotificationService } from '../../../core/services/notification.service
   `]
 })
 export class ProductFormDialogComponent implements OnInit {
+  readonly defaultCategories = ['Electronics', 'Office Supplies', 'Furniture', 'Food', 'Services'];
+  categories: string[] = [];
+
   form = this.fb.group({
     name:        ['', Validators.required],
     sku:         ['', Validators.required],
@@ -84,7 +90,34 @@ export class ProductFormDialogComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.categories = [...this.defaultCategories];
     if (this.data.product) this.form.patchValue(this.data.product as any);
+    this.includeCategoryInList(this.data.product?.category);
+    this.loadCategories();
+  }
+
+  private loadCategories(): void {
+    this.productService.getCategories(this.data.tenantId).subscribe({
+      next: (categories) => {
+        this.categories = this.mergeCategories(categories);
+        this.includeCategoryInList(this.data.product?.category);
+      },
+      error: () => {
+        this.categories = this.mergeCategories([]);
+        this.includeCategoryInList(this.data.product?.category);
+      },
+    });
+  }
+
+  private mergeCategories(categories: string[]): string[] {
+    return [...new Set([...this.defaultCategories, ...categories])].sort((a, b) => a.localeCompare(b));
+  }
+
+  private includeCategoryInList(category?: string): void {
+    const value = category?.trim();
+    if (!value) return;
+    if (this.categories.includes(value)) return;
+    this.categories = [...this.categories, value].sort((a, b) => a.localeCompare(b));
   }
 
   save(): void {

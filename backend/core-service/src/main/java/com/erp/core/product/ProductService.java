@@ -1,6 +1,8 @@
 package com.erp.core.product;
 
 import com.erp.core.audit.AuditService;
+import com.erp.core.order.OrderItemRepository;
+import com.erp.core.stock.StockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -16,6 +18,8 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final AuditService      auditService;
+    private final StockRepository   stockRepository;
+    private final OrderItemRepository orderItemRepository;
 
     @Transactional(readOnly = true)
     public Page<Product> findAll(String tenantId, Pageable pageable) {
@@ -50,6 +54,11 @@ public class ProductService {
         Product existing = findById(id, incoming.getTenantId());
         Product oldSnapshot = copyProduct(existing);
 
+        if (incoming.getSku() != null &&
+            productRepository.existsBySkuAndTenantIdAndIdNot(incoming.getSku(), incoming.getTenantId(), id)) {
+            throw new IllegalArgumentException("SKU already exists: " + incoming.getSku());
+        }
+
         existing.setName(incoming.getName());
         existing.setSku(incoming.getSku());
         existing.setDescription(incoming.getDescription());
@@ -68,6 +77,18 @@ public class ProductService {
     @Transactional
     public void delete(Long id, String tenantId) {
         Product existing = findById(id, tenantId);
+
+        if (stockRepository.existsByProductId(id)) {
+            throw new IllegalArgumentException(
+                    "Cannot delete product because it has an associated stock record. Remove the stock entry first.");
+        }
+
+        long linkedItems = orderItemRepository.countByProductId(id);
+        if (linkedItems > 0) {
+            throw new IllegalArgumentException(
+                    "Cannot delete product because " + linkedItems + " order item(s) still reference it.");
+        }
+
         productRepository.delete(existing);
         auditService.log("Product", String.valueOf(id),
                 "DELETE", existing, null, tenantId);

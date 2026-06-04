@@ -84,7 +84,7 @@ export class SidebarComponent implements OnInit {
     { label: 'Orders',     icon: 'receipt_long',      route: '/orders' },
     { label: 'Stock',      icon: 'warehouse',         route: '/stock' },
     { label: 'Settings',   icon: 'settings',          route: '/settings', roles: ['ADMIN'] },
-    { label: 'Audit Logs', icon: 'history',           route: '/audit',    roles: ['ADMIN', 'MANAGER'] },
+    { label: 'Audit Logs', icon: 'history',           route: '/audit',    roles: ['ADMIN'] },
     { label: 'Users',      icon: 'manage_accounts',   route: '/users',    roles: ['ADMIN'] },
   ];
 

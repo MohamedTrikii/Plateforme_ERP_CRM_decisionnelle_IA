@@ -23,4 +23,7 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
     List<Stock> findLowStockItems(@Param("tenantId") String tenantId);
 
     long countByTenantId(String tenantId);
+
+    boolean existsByProductId(Long productId);
 }
+

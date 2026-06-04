@@ -27,5 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     boolean existsBySkuAndTenantId(String sku, String tenantId);
 
+    boolean existsBySkuAndTenantIdAndIdNot(String sku, String tenantId, Long id);
+
     long countByTenantId(String tenantId);
 }

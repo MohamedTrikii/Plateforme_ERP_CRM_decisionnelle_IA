@@ -66,6 +66,24 @@ const routes: Routes = [
         loadChildren: () =>
           import('./features/stock/stock.module').then(m => m.StockModule),
       },
+      {
+        path: 'settings',
+        canActivate: [adminGuard],
+        loadChildren: () =>
+          import('./features/settings/settings.module').then(m => m.SettingsModule),
+      },
+      {
+        path: 'audit',
+        canActivate: [adminGuard],
+        loadChildren: () =>
+          import('./features/audit/audit.module').then(m => m.AuditModule),
+      },
+      {
+        path: 'users',
+        canActivate: [adminGuard],
+        loadChildren: () =>
+          import('./features/users/users.module').then(m => m.UsersModule),
+      },
     ],
   },
 

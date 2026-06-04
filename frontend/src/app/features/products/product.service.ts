@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Page } from '../../core/models/api.model';
 
@@ -33,6 +33,17 @@ export class ProductService {
 
   getById(id: number, tenantId: string): Observable<Product> {
     return this.http.get<Product>(`${this.base}/${id}`, { params: new HttpParams().set('tenantId', tenantId) });
+  }
+
+  getCategories(tenantId: string): Observable<string[]> {
+    return this.getAll(tenantId, 0, 500).pipe(
+      map((page) => {
+        const categories = page.content
+          .map((product) => product.category?.trim() ?? '')
+          .filter((category) => category.length > 0);
+        return [...new Set(categories)].sort((a, b) => a.localeCompare(b));
+      })
+    );
   }
 
   create(product: Product): Observable<Product> {

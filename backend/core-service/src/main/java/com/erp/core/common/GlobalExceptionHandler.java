@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -57,6 +58,18 @@ public class GlobalExceptionHandler {
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
         pd.setTitle("Business Rule Violation");
         pd.setDetail(ex.getMessage());
+        pd.setType(URI.create("https://erp.platform/errors/conflict"));
+        pd.setProperty("timestamp", Instant.now().toString());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(pd);
+    }
+
+    /** Database constraint violations (FK, unique) not caught upfront */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @SuppressWarnings("null")
+    public ResponseEntity<ProblemDetail> handleDataIntegrity(DataIntegrityViolationException ex) {
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        pd.setTitle("Data Integrity Violation");
+        pd.setDetail("Operation rejected due to a data constraint. The record may be referenced by other data.");
         pd.setType(URI.create("https://erp.platform/errors/conflict"));
         pd.setProperty("timestamp", Instant.now().toString());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(pd);

@@ -1,8 +1,11 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormArray, Validators } from '@angular/forms';
+import { finalize, forkJoin } from 'rxjs';
 import { Order, OrderService } from '../order.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { Customer, CustomerService } from '../../customers/customer.service';
+import { Product, ProductService } from '../../products/product.service';
 
 @Component({
   selector: 'app-order-detail-dialog',
@@ -40,8 +43,12 @@ import { NotificationService } from '../../../core/services/notification.service
       <mat-dialog-content>
         <form [formGroup]="orderForm" class="dialog-form">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Customer ID *</mat-label>
-            <input matInput formControlName="customerId" type="number">
+            <mat-label>Customer *</mat-label>
+            <mat-select formControlName="customerId">
+              <mat-option *ngFor="let customer of customers" [value]="customer.id">
+                {{ customer.name }}
+              </mat-option>
+            </mat-select>
           </mat-form-field>
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Notes</mat-label>
@@ -52,8 +59,12 @@ import { NotificationService } from '../../../core/services/notification.service
           <div formArrayName="items">
             <div *ngFor="let item of itemControls.controls; let i = index" [formGroupName]="i" class="item-row">
               <mat-form-field appearance="outline">
-                <mat-label>Product ID</mat-label>
-                <input matInput formControlName="productId" type="number">
+                <mat-label>Product</mat-label>
+                <mat-select formControlName="productId" (selectionChange)="onProductSelected(i, $event.value)">
+                  <mat-option *ngFor="let product of products" [value]="product.id">
+                    {{ product.name }} ({{ product.sku }})
+                  </mat-option>
+                </mat-select>
               </mat-form-field>
               <mat-form-field appearance="outline">
                 <mat-label>Qty</mat-label>
@@ -77,6 +88,7 @@ import { NotificationService } from '../../../core/services/notification.service
           {{ saving ? 'Creating…' : 'Create Order' }}
         </button>
       </mat-dialog-actions>
+      <p class="lookup-hint" *ngIf="loadingLookups">Loading customers and products...</p>
     </ng-container>
   `,
   styles: [`
@@ -87,9 +99,14 @@ import { NotificationService } from '../../../core/services/notification.service
     .dialog-form { display: flex; flex-direction: column; gap: 4px; min-width: 480px; }
     .item-row { display: flex; align-items: center; gap: 8px; }
     .item-row mat-form-field { flex: 1; }
+    .lookup-hint { margin: 8px 24px 0; color: var(--text-secondary); font-size: 12px; }
   `]
 })
-export class OrderDetailDialogComponent {
+export class OrderDetailDialogComponent implements OnInit {
+  customers: Customer[] = [];
+  products: Product[] = [];
+  loadingLookups = false;
+
   orderForm = this.fb.group({
     customerId: [null, [Validators.required, Validators.min(1)]],
     notes: [''],
@@ -104,8 +121,37 @@ export class OrderDetailDialogComponent {
     readonly dialogRef: MatDialogRef<OrderDetailDialogComponent>,
     private fb: FormBuilder,
     private orderService: OrderService,
+    private customerService: CustomerService,
+    private productService: ProductService,
     private notification: NotificationService,
   ) {}
+
+  ngOnInit(): void {
+    if (!this.data.newMode) return;
+    this.addItem();
+    this.loadLookupData();
+  }
+
+  private loadLookupData(): void {
+    const tenantId = this.data.tenantId ?? '';
+    if (!tenantId) return;
+
+    this.loadingLookups = true;
+    forkJoin({
+      customers: this.customerService.getAll(tenantId, 0, 200),
+      products: this.productService.getAll(tenantId, 0, 200),
+    })
+      .pipe(finalize(() => (this.loadingLookups = false)))
+      .subscribe({
+        next: ({ customers, products }) => {
+          this.customers = customers.content;
+          this.products = products.content;
+        },
+        error: () => {
+          this.notification.error('Failed to load customers and products');
+        },
+      });
+  }
 
   addItem(): void {
     this.itemControls.push(this.fb.group({
@@ -115,17 +161,29 @@ export class OrderDetailDialogComponent {
     }));
   }
 
+  onProductSelected(itemIndex: number, productId: number): void {
+    const selected = this.products.find((product) => product.id === Number(productId));
+    if (!selected) return;
+    this.itemControls.at(itemIndex).patchValue({ unitPrice: selected.price });
+  }
+
   removeItem(i: number): void { this.itemControls.removeAt(i); }
 
   submit(): void {
     if (this.orderForm.invalid || !this.itemControls.length) return;
     this.saving = true;
     const val = this.orderForm.value;
+    const normalizedItems = (val.items ?? []).map((item: any) => ({
+      productId: Number(item.productId),
+      quantity: Number(item.quantity),
+      unitPrice: Number(item.unitPrice),
+    }));
+
     const order: Order = {
-      customerId: val.customerId!,
+      customerId: Number(val.customerId),
       notes:      val.notes ?? '',
       tenantId:   this.data.tenantId,
-      items:      val.items as any[],
+      items:      normalizedItems,
     };
     this.orderService.create(order).subscribe({
       next: () => { this.notification.success('Order created'); this.dialogRef.close(true); },

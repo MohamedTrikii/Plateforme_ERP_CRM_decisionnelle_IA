@@ -34,6 +34,7 @@ public class SecurityConfig {
                 // Public config endpoint (login page branding)
                 .requestMatchers("/api/v1/config/public").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 // All other endpoints require a valid JWT
                 .anyRequest().authenticated()
             )
