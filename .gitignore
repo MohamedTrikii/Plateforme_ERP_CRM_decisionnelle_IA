@@ -47,3 +47,6 @@ logs/
 
 # ── Local tooling ──
 tools/
+
+# ── Local logs ──
+*_log.txt
